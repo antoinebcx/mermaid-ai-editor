@@ -18,7 +18,6 @@ import {
   LightMode,
   DarkMode,
 } from '@mui/icons-material';
-//import { VerticalDivider } from './VerticalDivider';
 import mermaid from 'mermaid';
 
 const defaultDiagram = `graph TD
@@ -168,7 +167,7 @@ const MermaidEditor: React.FC<MermaidEditorProps> = ({ onToggleTheme }) => {
       >
         <Toolbar>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            Mermaid Board
+            Mermaid board
           </Typography>
           <IconButton 
             color={theme.palette.mode === 'light' ? 'default' : 'inherit'}
@@ -255,23 +254,19 @@ const MermaidEditor: React.FC<MermaidEditorProps> = ({ onToggleTheme }) => {
                 <ZoomInOutlined />
               </IconButton>
             </Tooltip>
-            {/* <VerticalDivider /> */}
             <Tooltip title="Zoom Out">
               <IconButton onClick={handleZoomOut} size="small">
                 <ZoomOutOutlined />
               </IconButton>
             </Tooltip>
-            {/* <VerticalDivider /> */}
             <Tooltip title="Reset Zoom">
               <IconButton onClick={handleResetZoom} size="small">
                 <CenterFocusStrongOutlined />
               </IconButton>
             </Tooltip>
-            {/* <VerticalDivider /> */}
             <Typography variant="body2" sx={{ minWidth: '45px', textAlign: 'center' }}>
               {Math.round(zoom * 100)}%
             </Typography>
-            {/* <VerticalDivider /> */}
             <Tooltip title="Save Diagram">
               <IconButton onClick={handleSave} size="small">
                 <SaveOutlined />
