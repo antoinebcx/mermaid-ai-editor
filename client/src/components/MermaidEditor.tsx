@@ -13,14 +13,13 @@ import {
   ZoomIn,
   ZoomOut,
   Save,
-  Upload as UploadIcon,
 } from '@mui/icons-material';
 import mermaid from 'mermaid';
 
 const defaultDiagram = `graph TD
-    A[Start] --> B[Process]
-    B --> C[End]
-    D[Branch] --> B`;
+    A[Email] --> B[Process]
+    B --> C[Order]
+    D[SMS] --> B`;
 
 const Editor = styled('textarea')(({ theme }) => ({
   width: '100%',
@@ -87,11 +86,9 @@ const MermaidEditor: React.FC = () => {
   };
 
   const makeDraggable = (element: SVGElement) => {
-    let pos1 = 0,
-      pos2 = 0,
-      pos3 = 0,
-      pos4 = 0;
-
+    let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+    let currentTransform = { x: 0, y: 0 };  // track current position
+    
     const dragMouseDown = (e: MouseEvent) => {
       e.preventDefault();
       pos3 = e.clientX;
@@ -107,9 +104,12 @@ const MermaidEditor: React.FC = () => {
       pos3 = e.clientX;
       pos4 = e.clientY;
 
-      element.style.transform = `translate(${element.offsetLeft - pos1}px, ${
-        element.offsetTop - pos2
-      }px)`;
+      // update tracked position
+      currentTransform.x -= pos1;
+      currentTransform.y -= pos2;
+      
+      // use tracked position
+      element.style.transform = `translate(${currentTransform.x}px, ${currentTransform.y}px)`;
     };
 
     const closeDragElement = () => {
@@ -119,7 +119,7 @@ const MermaidEditor: React.FC = () => {
 
     element.onmousedown = dragMouseDown as any;
     element.style.cursor = 'move';
-  };
+};
 
   const handleZoomIn = () => setZoom((prev) => Math.min(prev + 0.1, 2));
   const handleZoomOut = () => setZoom((prev) => Math.max(prev - 0.1, 0.5));
@@ -133,21 +133,11 @@ const MermaidEditor: React.FC = () => {
         },
         body: JSON.stringify({ diagram: code }),
       });
-      // You could add success notification here
     } catch (err) {
       console.error('Failed to save diagram:', err);
     }
   };
-
-  const handleLoad = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => setCode(e.target?.result as string);
-      reader.readAsText(file);
-    }
-  };
-
+  
   return (
     <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Paper
@@ -177,19 +167,6 @@ const MermaidEditor: React.FC = () => {
             <IconButton onClick={handleSave} size="small" title="Save Diagram">
               <Save />
             </IconButton>
-            <Button
-              component="label"
-              size="small"
-              startIcon={<UploadIcon />}
-              sx={{ minWidth: 'auto' }}
-            >
-              <input
-                type="file"
-                accept=".mmd,.txt"
-                onChange={handleLoad}
-                hidden
-              />
-            </Button>
           </Stack>
         </Stack>
         {error && (
