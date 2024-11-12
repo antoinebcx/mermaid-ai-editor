@@ -12,10 +12,12 @@ app.use(express.json());
 
 app.post('/api/diagrams', (req, res) => {
   const { diagram } = req.body;
+  console.log(`Ping`);
   res.json({ success: true });
 });
 
 app.get('/api/diagrams', (req, res) => {
+  console.log(`Pong`);
   res.json({ diagrams: [] });
 });
 
