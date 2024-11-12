@@ -1,7 +1,8 @@
-import { createTheme } from '@mui/material/styles';
+import { createTheme, ThemeOptions } from '@mui/material/styles';
 
-export const theme = createTheme({
+const getThemeOptions = (mode: 'light' | 'dark'): ThemeOptions => ({
   palette: {
+    mode,
     primary: {
       main: '#1976d2',
       light: '#42a5f5',
@@ -13,9 +14,12 @@ export const theme = createTheme({
       dark: '#7b1fa2',
     },
     background: {
-      default: '#f5f5f5',
-      paper: '#ffffff',
+      default: mode === 'light' ? '#f5f5f5' : '#121212',
+      paper: mode === 'light' ? '#ffffff' : '#1e1e1e',
     },
+  },
+  typography: {
+    fontFamily: '"Roboto Mono", monospace, "Georgia", "Roboto", "Helvetica", "Arial", sans-serif',
   },
   components: {
     MuiButton: {
@@ -28,9 +32,11 @@ export const theme = createTheme({
     MuiPaper: {
       styleOverrides: {
         root: {
-          borderRadius: 8,
+          // borderRadius: 8,
         },
       },
     },
   },
 });
+
+export const createAppTheme = (mode: 'light' | 'dark') => createTheme(getThemeOptions(mode));
