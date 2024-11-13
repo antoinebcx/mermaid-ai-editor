@@ -17,6 +17,7 @@ import mammoth from 'mammoth';
 interface ChatInputProps {
   onSend: (message: string, files?: UploadedFile[]) => void;
   isLoading?: boolean;
+  currentDiagram?: string;
 }
 
 declare global {
@@ -32,7 +33,7 @@ interface UploadedFile {
   language?: string;
 }
 
-const ChatInput: React.FC<ChatInputProps> = ({ onSend, isLoading = false }) => {
+const ChatInput: React.FC<ChatInputProps> = ({ onSend, isLoading = false, currentDiagram }) => {
   const theme = useTheme();
   const [input, setInput] = useState('');
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
@@ -195,7 +196,6 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSend, isLoading = false }) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if ((input.trim() || uploadedFiles.length > 0) && !isLoading && !isExtracting) {
-      // format the complete message with both input and file contents
       const formattedFiles = uploadedFiles.map((file, index) => {
         const fileInfo = `File: ${file.file.name} (${file.type.toUpperCase()}${file.language ? ` - ${file.language}` : ''})`;
         let formattedContent = file.content;
@@ -206,8 +206,15 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSend, isLoading = false }) => {
         
         return `<START DOCUMENT ${index + 1}>\n${fileInfo}\n\n${formattedContent}\n<END DOCUMENT ${index + 1}>`;
       }).join('\n\n');
-
-      const fullMessage = [formattedFiles, input.trim()].filter(Boolean).join('\n\n');
+  
+      const diagramState = currentDiagram ? 
+        `<CURRENT_DIAGRAM>\n${currentDiagram}\n</CURRENT_DIAGRAM>` : '';
+  
+      const fullMessage = [
+        formattedFiles, 
+        input.trim(),
+        diagramState
+      ].filter(Boolean).join('\n\n');
       
       onSend(fullMessage);
       setInput('');

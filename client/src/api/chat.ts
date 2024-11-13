@@ -13,7 +13,12 @@ export const sendChatMessage = async (message: string): Promise<string> => {
     }
 
     const data = await response.json();
-    return data.response;
+
+    if (!data.success || !data.data?.response) {
+      throw new Error('Invalid response format from server');
+    }
+
+    return data.data.response;
   } catch (error) {
     console.error('Error sending chat message:', error);
     throw error;
