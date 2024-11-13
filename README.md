@@ -2,7 +2,7 @@
 
 Create and edit Mermaid flow charts with AI.
 
-You just need an `ANTHROPIC_API_KEY` in your `server` `.env` and you're good to go!
+Add your `ANTHROPIC_API_KEY` to the `.env` file in the server directory and you're good to go!
 
 2024-11-13 snapshot:
 
