@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import {
   Box,
-  AppBar,
-  Toolbar,
-  Typography,
-  IconButton,
   Alert,
   Tooltip,
+  Typography,
+  IconButton,
   useTheme,
   styled,
 } from '@mui/material';
@@ -15,8 +13,6 @@ import {
   ZoomOutOutlined,
   CenterFocusStrongOutlined,
   SaveOutlined,
-  LightMode,
-  DarkMode,
 } from '@mui/icons-material';
 import mermaid from 'mermaid';
 
@@ -41,11 +37,7 @@ const Editor = styled('textarea')(({ theme }) => ({
   },
 }));
 
-interface MermaidEditorProps {
-  onToggleTheme: () => void;
-}
-
-const MermaidEditor: React.FC<MermaidEditorProps> = ({ onToggleTheme }) => {
+const MermaidEditor = () => {
   const theme = useTheme();
   const [code, setCode] = useState(defaultDiagram);
   const [error, setError] = useState('');
@@ -116,29 +108,7 @@ const MermaidEditor: React.FC<MermaidEditorProps> = ({ onToggleTheme }) => {
   };
 
   return (
-    <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <AppBar 
-        position="static" 
-        elevation={0}
-        sx={{ 
-          backgroundColor: theme.palette.mode === 'light' ? 'white' : undefined,
-          color: theme.palette.mode === 'light' ? 'text.primary' : undefined
-        }}
-      >
-        <Toolbar>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            Mermaid board
-          </Typography>
-          <IconButton 
-            color={theme.palette.mode === 'light' ? 'default' : 'inherit'}
-            onClick={onToggleTheme}
-            sx={{ ml: 2 }}
-          >
-            {theme.palette.mode === 'dark' ? <LightMode /> : <DarkMode />}
-          </IconButton>
-        </Toolbar>
-      </AppBar>
-
+    <>
       {error && (
         <Alert severity="error" sx={{ m: 2 }}>
           {error}
@@ -235,7 +205,7 @@ const MermaidEditor: React.FC<MermaidEditorProps> = ({ onToggleTheme }) => {
           </Box>
         </Box>
       </Box>
-    </Box>
+    </>
   );
 };
 
