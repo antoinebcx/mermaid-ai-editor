@@ -14,7 +14,10 @@
 # production
 /build
 
-dist/
+# dist
+server/dist/
+**/dist/
+*.dist.js
 
 # misc
 .DS_Store
