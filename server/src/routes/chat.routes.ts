@@ -3,8 +3,9 @@ import { ChatController } from '../controllers/chat.controller';
 import { ChatService } from '../services/chat.service';
 
 const router = Router();
-const chatController = new ChatController(new ChatService());
+const chatService = new ChatService();
+const chatController = new ChatController(chatService);
 
-router.post('/', chatController.processMessage);
+router.post('/message', chatController.processMessage);
 
 export default router;
