@@ -1,26 +1,22 @@
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
-
-dotenv.config();
+import { config } from './config';
+import diagramRoutes from './routes/diagram.routes';
+import chatRoutes from './routes/chat.routes';
+import { errorHandler } from './middleware/error.middleware';
 
 const app = express();
-const port = process.env.PORT || 3001;
 
-app.use(cors());
+app.use(cors({
+  origin: config.cors.origin
+}));
 app.use(express.json());
 
-app.post('/api/diagrams', (req, res) => {
-  const { diagram } = req.body;
-  console.log(`Ping`);
-  res.json({ success: true });
-});
+app.use('/api/diagrams', diagramRoutes);
+app.use('/api/chat', chatRoutes);
 
-app.get('/api/diagrams', (req, res) => {
-  console.log(`Pong`);
-  res.json({ diagrams: [] });
-});
+app.use(errorHandler);
 
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
+app.listen(config.port, () => {
+  console.log(`Server running in ${config.nodeEnv} mode on port ${config.port}`);
 });

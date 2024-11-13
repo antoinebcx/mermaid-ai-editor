@@ -14,6 +14,11 @@
 # production
 /build
 
+# dist
+server/dist/
+**/dist/
+*.dist.js
+
 # misc
 .DS_Store
 *.pem
