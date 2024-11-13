@@ -139,7 +139,7 @@ const MermaidEditor = () => {
             placeholder="Enter Mermaid diagram code here..."
             sx={{padding: '30px'}}
           />
-          <ChatInput onSend={handleChatMessage} />
+          <ChatInput onSend={handleChatMessage} isLoading={false} />
         </Box>
         <Box
           sx={{
