@@ -24,12 +24,16 @@ const NavBar: React.FC<NavBarProps> = ({ onToggleTheme }) => {
       elevation={0}
       sx={{ 
         backgroundColor: theme.palette.mode === 'light' ? 'white' : undefined,
-        color: theme.palette.mode === 'light' ? 'text.primary' : undefined
+        color: theme.palette.mode === 'light' ? 'text.primary' : undefined,
+        borderBottom: theme.palette.mode === 'light' ? '1px solid #f0f0f0' : '1px solid #282828',
       }}
     >
       <Toolbar>
-        <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-          Mermaid board
+        <Typography component="div" sx={{ 
+            fontSize: '18px', fontWeight: 'bold', flexGrow: 1,
+            color: theme.palette.mode === 'light' ? '#484848' : '#dddddd'
+         }}>
+            Naiad
         </Typography>
         <IconButton 
           color={theme.palette.mode === 'light' ? 'default' : 'inherit'}
