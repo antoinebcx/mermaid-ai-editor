@@ -15,12 +15,12 @@ import {
   SaveOutlined,
 } from '@mui/icons-material';
 import mermaid from 'mermaid';
+import ChatInput from './ChatInput';
 
 const defaultDiagram = `graph TD
     A(Email) --> C[Process]
     B(SMS) --> C
-    C --> D(Order)
-    `;
+    C --> D(Order)`;
 
 const Editor = styled('textarea')(({ theme }) => ({
   width: '100%',
@@ -107,6 +107,11 @@ const MermaidEditor = () => {
     }
   };
 
+  const handleChatMessage = (message: string) => {
+    console.log('Chat message:', message);
+    // handle chat message here later
+  };
+
   return (
     <>
       {error && (
@@ -125,14 +130,7 @@ const MermaidEditor = () => {
           sx={{
             width: { xs: '100%', md: '50%' },
             height: { xs: '50vh', md: 'auto' },
-            ...(theme.breakpoints.up('md') ? {
-              borderRight: 0.25,
-              borderBottom: 0,
-            } : {
-              borderRight: 0,
-              borderBottom: 0.25,
-            }),
-            borderColor: 'divider',
+            position: 'relative',
           }}
         >
           <Editor
@@ -141,6 +139,7 @@ const MermaidEditor = () => {
             placeholder="Enter Mermaid diagram code here..."
             sx={{padding: '30px'}}
           />
+          <ChatInput onSend={handleChatMessage} />
         </Box>
         <Box
           sx={{
