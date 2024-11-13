@@ -16,6 +16,7 @@ import {
 } from '@mui/icons-material';
 import mermaid from 'mermaid';
 import ChatInput from './ChatInput';
+import { sendChatMessage } from '../api';
 
 const defaultDiagram = `graph TD
     A(Email) --> C[Process]
@@ -42,6 +43,8 @@ const MermaidEditor = () => {
   const [code, setCode] = useState(defaultDiagram);
   const [error, setError] = useState('');
   const [zoom, setZoom] = useState(1);
+  const [isChatLoading, setIsChatLoading] = useState(false);
+  const [chatError, setChatError] = useState<string | null>(null);
 
   useEffect(() => {
     mermaid.initialize({
@@ -107,9 +110,22 @@ const MermaidEditor = () => {
     }
   };
 
-  const handleChatMessage = (message: string) => {
-    console.log('Chat message:', message);
-    // handle chat message here later
+  const handleChatMessage = async (message: string) => {
+    setIsChatLoading(true);
+    setChatError(null);
+    
+    try {
+      const response = await sendChatMessage(message);
+      
+      // response is a Mermaid diagram, update the code
+      // add validation here to ensure it's valid Mermaid syntax
+      setCode(response);
+    } catch (error) {
+      console.error('Chat error:', error);
+      setChatError('Failed to process chat message. Please try again.');
+    } finally {
+      setIsChatLoading(false);
+    }
   };
 
   return (
@@ -117,6 +133,12 @@ const MermaidEditor = () => {
       {error && (
         <Alert severity="error" sx={{ m: 2 }}>
           {error}
+        </Alert>
+      )}
+
+      {chatError && (
+        <Alert severity="error" sx={{ m: 2 }}>
+          {chatError}
         </Alert>
       )}
 
