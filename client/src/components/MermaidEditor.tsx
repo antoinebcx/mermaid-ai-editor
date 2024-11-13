@@ -171,9 +171,6 @@ const MermaidEditor = () => {
               flexDirection: 'row',
               alignItems: 'center',
               gap: '7px',
-              backgroundColor: theme.palette.mode === 'light' 
-                ? 'rgba(255, 255, 255, 0.8)' 
-                : 'rgba(0, 0, 0, 0.8)',
               padding: '7px',
               borderRadius: '8px',
             }}
