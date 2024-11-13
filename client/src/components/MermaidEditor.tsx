@@ -21,9 +21,10 @@ import {
 import mermaid from 'mermaid';
 
 const defaultDiagram = `graph TD
-    A[Email] --> B[Process]
-    B --> C[Order]
-    D[SMS] --> B`;
+    A(Email) --> C[Process]
+    B(SMS) --> C
+    C --> D(Order)
+    `;
 
 const Editor = styled('textarea')(({ theme }) => ({
   width: '100%',
@@ -88,53 +89,12 @@ const MermaidEditor: React.FC<MermaidEditorProps> = ({ onToggleTheme }) => {
         svgElement.style.transform = `scale(${zoom})`;
         svgElement.style.transformOrigin = 'center';
         svgElement.style.transition = 'transform 0.2s';
-
-        const nodes = svgElement.querySelectorAll('.node');
-        nodes.forEach((node) => {
-          makeDraggable(node as SVGElement);
-        });
       }
 
       setError('');
     } catch (err: any) {
       setError(err.message);
     }
-  };
-
-  const makeDraggable = (element: SVGElement) => {
-    let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-    let currentTransform = { x: 0, y: 0 };  // track current position
-    
-    const dragMouseDown = (e: MouseEvent) => {
-      e.preventDefault();
-      pos3 = e.clientX;
-      pos4 = e.clientY;
-      document.onmouseup = closeDragElement;
-      document.onmousemove = elementDrag;
-    };
-
-    const elementDrag = (e: MouseEvent) => {
-      e.preventDefault();
-      pos1 = pos3 - e.clientX;
-      pos2 = pos4 - e.clientY;
-      pos3 = e.clientX;
-      pos4 = e.clientY;
-
-      // update tracked position
-      currentTransform.x -= pos1;
-      currentTransform.y -= pos2;
-      
-      // use tracked position
-      element.style.transform = `translate(${currentTransform.x}px, ${currentTransform.y}px)`;
-    };
-
-    const closeDragElement = () => {
-      document.onmouseup = null;
-      document.onmousemove = null;
-    };
-
-    element.onmousedown = dragMouseDown as any;
-    element.style.cursor = 'move';
   };
 
   const handleZoomIn = () => setZoom(prev => Math.min(prev + 0.1, 2));
