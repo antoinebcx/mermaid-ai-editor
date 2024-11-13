@@ -6,5 +6,6 @@ export const config = {
   nodeEnv: process.env.NODE_ENV || 'development',
   cors: {
     origin: process.env.CORS_ORIGIN || 'http://localhost:3000'
-  }
+  },
+  ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY || '',
 } as const;
