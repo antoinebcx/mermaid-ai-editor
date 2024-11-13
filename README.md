@@ -6,8 +6,8 @@ Add your `ANTHROPIC_API_KEY` to the `.env` file in the server directory and you'
 
 2024-11-13 snapshot:
 
-<img width="1322" alt="image" src="https://github.com/user-attachments/assets/a7de6ad4-a14c-4e0f-a91c-ae83f2027ff4">
+<img width="1322" alt="image" src="https://github.com/user-attachments/assets/6c1788ad-4801-42bc-b73c-ecc07970a50a">
 
 --
 
-<img width="1322" alt="image" src="https://github.com/user-attachments/assets/9f94e209-17a8-475e-9825-8f114f257ecb">
+<img width="1322" alt="image" src="https://github.com/user-attachments/assets/205fe190-6e87-4cd2-8fc2-0c6deb5ea762">
