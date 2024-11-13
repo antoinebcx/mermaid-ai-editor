@@ -197,11 +197,11 @@ const MermaidEditor = () => {
             <Typography variant="body2" sx={{ minWidth: '45px', textAlign: 'center' }}>
               {Math.round(zoom * 100)}%
             </Typography>
-            <Tooltip title="Save Diagram">
+            {/* <Tooltip title="Save Diagram">
               <IconButton onClick={handleSave} size="small">
                 <SaveOutlined />
               </IconButton>
-            </Tooltip>
+            </Tooltip> */}
           </Box>
         </Box>
       </Box>
