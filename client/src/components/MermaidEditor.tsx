@@ -31,7 +31,7 @@ const Editor = styled('textarea')(({ theme }) => ({
   fontSize: '0.875rem',
   border: 'none',
   resize: 'none',
-  backgroundColor: theme.palette.mode === 'light' ? theme.palette.grey[50] : theme.palette.grey[900],
+  backgroundColor: theme.palette.mode === 'light' ? '' : '#1f1f1f',
   color: theme.palette.text.primary,
   '&:focus': {
     outline: 'none',
@@ -171,7 +171,7 @@ const MermaidEditor = () => {
           sx={{
             width: { xs: '100%', md: '50%' },
             p: 2,
-            bgcolor: 'background.paper',
+            bgcolor: theme.palette.mode === 'light' ? theme.palette.grey[50] : theme.palette.grey[900],
             overflow: 'auto',
             position: 'relative',
             height: { xs: '50vh', md: 'auto' },
