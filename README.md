@@ -1,13 +1,21 @@
 # Mermaid AI editor
 
-Create and edit Mermaid flow charts with AI.
+Create and edit Mermaid flow charts with AI (Claude).
+
+You can upload text, code files, PDF and Word documents.
+
+---
+
+**How to use**
 
 Add your `ANTHROPIC_API_KEY` to the `.env` file in the server directory and you're good to go!
 
-2024-11-13 snapshot:
+---
 
-<img width="1322" alt="image" src="https://github.com/user-attachments/assets/6c1788ad-4801-42bc-b73c-ecc07970a50a">
+**Snapshot (2024-11-14)**
 
---
+<img width="1321" alt="image" src="https://github.com/user-attachments/assets/2b78132a-7496-44d6-86c8-392d123722a1">
 
-<img width="1322" alt="image" src="https://github.com/user-attachments/assets/205fe190-6e87-4cd2-8fc2-0c6deb5ea762">
+_
+
+<img width="1321" alt="image" src="https://github.com/user-attachments/assets/dabc0ce7-0386-46aa-817f-c1cd28979ec6">
