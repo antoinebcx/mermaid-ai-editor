@@ -1,4 +1,4 @@
-import React, { ChangeEvent } from 'react';
+import React, { ChangeEvent, useState } from 'react';
 import { useTheme, styled } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
@@ -106,16 +106,21 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
   className = '',
 }) => {
   const theme = useTheme();
+  const [copied, setCopied] = useState(false);
 
   const getColors = () => ({
     keyword: theme.palette.mode === 'dark' ? '#B39DDB' : '#9575CD',
     node: theme.palette.mode === 'dark' ? '#4fa1e3' : '#64B5F6',
-    operator: theme.palette.mode === 'dark' ? '#A5D6A7' : '#81C784',
+    operator: theme.palette.mode === 'dark' ? '#7DD180' : '#81C784',
     hexColor: (match: string) => match,
   });
 
   const handleCopy = () => {
     navigator.clipboard.writeText(value);
+    setCopied(true);
+    setTimeout(() => {
+      setCopied(false);
+    }, 2000);
   };
 
   const highlightSyntax = (code: string): JSX.Element[] => {
@@ -150,7 +155,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
 
   return (
     <EditorContainer className={className}>
-      <Tooltip title="Copy code">
+      <Tooltip title={copied ? "Copied!" : "Copy code"}>
         <CopyButton onClick={handleCopy} size="small">
           <ContentCopyIcon fontSize="small" />
         </CopyButton>

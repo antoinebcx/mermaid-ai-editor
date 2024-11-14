@@ -56,7 +56,7 @@ const MermaidEditor = () => {
   const theme = useTheme();
   const [code, setCode] = useState<string>(defaultDiagram);
   const [error, setError] = useState('');
-  const [zoom, setZoom] = useState(0.8);
+  const [zoom, setZoom] = useState(1);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [isChatLoading, setIsChatLoading] = useState(false);
@@ -297,7 +297,7 @@ const MermaidEditor = () => {
               gap: '7px',
               padding: '7px',
               borderRadius: '8px',
-              backgroundColor: theme.palette.background.paper,
+              // backgroundColor: theme.palette.background.paper,
             }}
           >
             <Tooltip title="Zoom In">
