@@ -16,32 +16,22 @@ import {
 } from '@mui/icons-material';
 import mermaid from 'mermaid';
 import ChatInput from './ChatInput';
+import CodeEditor from './CodeEditor';
 import { sendChatMessage } from '../api';
 
 type TouchEvent = React.TouchEvent<HTMLDivElement>;
-type WheelEvent = React.WheelEvent<HTMLDivElement>;
 
 const NAVBAR_HEIGHT = 64;
 
 const defaultDiagram = `graph TD
-    A(Email) --> C[Process]
+    A(Email) --> C[Process Message]
     B(SMS) --> C
-    C --> D(Order)`;
-
-const Editor = styled('textarea')(({ theme }) => ({
-  width: '100%',
-  height: '100%',
-  padding: theme.spacing(2),
-  fontFamily: theme.typography.fontFamily,
-  fontSize: '0.875rem',
-  border: 'none',
-  resize: 'none',
-  backgroundColor: theme.palette.mode === 'light' ? '' : '#1f1f1f',
-  color: theme.palette.text.primary,
-  '&:focus': {
-    outline: 'none',
-  },
-}));
+    C --> D{Valid Order?}
+    D -->|Yes| E[Create Order]
+    D -->|No| F[Reject Request]
+    E --> G(Send Confirmation)
+    E --> H(Update Inventory)
+    F --> I(Send Rejection Notice)`;
 
 const DiagramContainer = styled(Box)(({ theme }) => ({
   width: '100%',
@@ -64,12 +54,11 @@ const TransformableArea = styled(Box)({
 
 const MermaidEditor = () => {
   const theme = useTheme();
-  const [code, setCode] = useState(defaultDiagram);
+  const [code, setCode] = useState<string>(defaultDiagram);
   const [error, setError] = useState('');
   const [zoom, setZoom] = useState(0.8);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [isChatLoading, setIsChatLoading] = useState(false);
   const [chatError, setChatError] = useState<string | null>(null);
   const [lastPosition, setLastPosition] = useState({ x: 0, y: 0 });
@@ -189,10 +178,6 @@ const MermaidEditor = () => {
     }
   };
 
-  const handleTouchEnd = () => {
-    setTouchDistance(null);
-  };
-
   const handleSave = async () => {
     try {
       await fetch('http://localhost:3001/api/diagrams', {
@@ -259,11 +244,10 @@ const MermaidEditor = () => {
             position: 'relative',
           }}
         >
-          <Editor
+          <CodeEditor
             value={code}
             onChange={(e) => setCode(e.target.value)}
             placeholder="Enter Mermaid diagram code here..."
-            sx={{padding: '30px'}}
           />
           <ChatInput 
             onSend={(message) => handleChatMessage(message)}
