@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Box,
   Alert,
@@ -16,35 +16,56 @@ import {
 } from '@mui/icons-material';
 import mermaid from 'mermaid';
 import ChatInput from './ChatInput';
+import CodeEditor from './CodeEditor';
 import { sendChatMessage } from '../api';
 
-const defaultDiagram = `graph TD
-    A(Email) --> C[Process]
-    B(SMS) --> C
-    C --> D(Order)`;
+type TouchEvent = React.TouchEvent<HTMLDivElement>;
 
-const Editor = styled('textarea')(({ theme }) => ({
+const NAVBAR_HEIGHT = 64;
+
+const defaultDiagram = `graph TD
+    A(Email) --> C[Process Message]
+    B(SMS) --> C
+    C --> D{Valid Order?}
+    D -->|Yes| E[Create Order]
+    D -->|No| F[Reject Request]
+    E --> G(Send Confirmation)
+    E --> H(Update Inventory)
+    F --> I(Send Rejection Notice)`;
+
+const DiagramContainer = styled(Box)(({ theme }) => ({
   width: '100%',
   height: '100%',
-  padding: theme.spacing(2),
-  fontFamily: theme.typography.fontFamily,
-  fontSize: '0.875rem',
-  border: 'none',
-  resize: 'none',
-  backgroundColor: theme.palette.mode === 'light' ? '' : '#1f1f1f',
-  color: theme.palette.text.primary,
-  '&:focus': {
-    outline: 'none',
+  position: 'relative',
+  overflow: 'hidden',
+  cursor: 'grab',
+  '&:active': {
+    cursor: 'grabbing',
   },
+  backgroundColor: theme.palette.mode === 'light' ? theme.palette.grey[50] : theme.palette.grey[900],
 }));
+
+const TransformableArea = styled(Box)({
+  position: 'absolute',
+  top: '50%',
+  left: '50%',
+  transformOrigin: 'center center',
+});
 
 const MermaidEditor = () => {
   const theme = useTheme();
-  const [code, setCode] = useState(defaultDiagram);
+  const [code, setCode] = useState<string>(defaultDiagram);
   const [error, setError] = useState('');
   const [zoom, setZoom] = useState(1);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
   const [isChatLoading, setIsChatLoading] = useState(false);
   const [chatError, setChatError] = useState<string | null>(null);
+  const [lastPosition, setLastPosition] = useState({ x: 0, y: 0 });
+  const [touchDistance, setTouchDistance] = useState<number | null>(null);
+  
+  const containerRef = useRef<HTMLDivElement>(null);
+  const transformableRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     mermaid.initialize({
@@ -81,9 +102,9 @@ const MermaidEditor = () => {
 
       const svgElement = element.querySelector('svg');
       if (svgElement) {
-        svgElement.style.transform = `scale(${zoom})`;
-        svgElement.style.transformOrigin = 'center';
-        svgElement.style.transition = 'transform 0.2s';
+        svgElement.style.transform = 'none';
+        svgElement.style.maxWidth = '100%';
+        svgElement.style.maxHeight = '100%';
       }
 
       setError('');
@@ -94,7 +115,68 @@ const MermaidEditor = () => {
 
   const handleZoomIn = () => setZoom(prev => Math.min(prev + 0.1, 2));
   const handleZoomOut = () => setZoom(prev => Math.max(prev - 0.1, 0.5));
-  const handleResetZoom = () => setZoom(1);
+  const handleResetZoom = () => {
+    setZoom(1);
+    setPosition({ x: 0, y: 0 });
+  };
+
+  const handleMouseDown = (e: any) => {
+    if (e.button !== 0) return;
+    setIsDragging(true);
+    setLastPosition({ x: e.clientX, y: e.clientY });
+  };
+  
+  const handleMouseMove = (e: any) => {
+    if (!isDragging) return;
+    
+    const deltaX = e.clientX - lastPosition.x;
+    const deltaY = e.clientY - lastPosition.y;
+    
+    setPosition(prev => ({
+      x: prev.x + deltaX,
+      y: prev.y + deltaY
+    }));
+    
+    setLastPosition({ x: e.clientX, y: e.clientY });
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
+    if (e.ctrlKey || Math.abs(e.deltaY) < 50) {
+      e.preventDefault();
+      const delta = -e.deltaY * 0.01;
+      setZoom(prev => Math.min(Math.max(prev + delta, 0.5), 2));
+    }
+  };
+
+  const handleTouchStart = (e: TouchEvent) => {
+    if (e.touches.length === 2) {
+      e.preventDefault();
+      const distance = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      setTouchDistance(distance);
+    }
+  };
+  
+  const handleTouchMove = (e: TouchEvent) => {
+    if (e.touches.length === 2 && touchDistance !== null) {
+      e.preventDefault();
+      const newDistance = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      const delta = newDistance - touchDistance;
+      const scaleChange = delta > 0 ? 0.02 : -0.02;
+      
+      setZoom(prev => Math.min(Math.max(prev + scaleChange, 0.5), 2));
+      setTouchDistance(newDistance);
+    }
+  };
 
   const handleSave = async () => {
     try {
@@ -109,7 +191,6 @@ const MermaidEditor = () => {
       console.error('Failed to save diagram:', err);
     }
   };
-
   const handleChatMessage = async (message: string) => {
     setIsChatLoading(true);
     setChatError(null);
@@ -128,6 +209,10 @@ const MermaidEditor = () => {
     }
   };
 
+  const getTransformStyle = () => ({
+    transform: `translate(calc(-50% + ${position.x}px), calc(-50% + ${position.y}px)) scale(${zoom})`,
+  });
+
   return (
     <>
       {error && (
@@ -144,48 +229,61 @@ const MermaidEditor = () => {
 
       <Box sx={{ 
         display: 'flex', 
-        flexGrow: 1, 
+        flexGrow: 1,
+        height: `calc(100vh - ${NAVBAR_HEIGHT}px)`,
         position: 'relative',
-        flexDirection: { xs: 'column', md: 'row' }
+        flexDirection: { xs: 'column', md: 'row' },
+        margin: 0,
+        padding: 0,
+        overflow: 'hidden'
       }}>
         <Box
           sx={{
             width: { xs: '100%', md: '50%' },
-            height: { xs: '50vh', md: 'auto' },
+            height: { xs: '50vh', md: '100%' },
             position: 'relative',
           }}
         >
-          <Editor
+          <CodeEditor
             value={code}
             onChange={(e) => setCode(e.target.value)}
             placeholder="Enter Mermaid diagram code here..."
-            sx={{padding: '30px'}}
           />
           <ChatInput 
-            onSend={(message) => handleChatMessage(message)} 
+            onSend={(message) => handleChatMessage(message)}
             isLoading={isChatLoading}
             currentDiagram={code}
           />
         </Box>
-        <Box
+
+        <DiagramContainer
+          ref={containerRef}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
+          onWheel={handleWheel}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={() => setTouchDistance(null)}
           sx={{
             width: { xs: '100%', md: '50%' },
-            p: 2,
-            bgcolor: theme.palette.mode === 'light' ? theme.palette.grey[50] : theme.palette.grey[900],
-            overflow: 'auto',
-            position: 'relative',
-            height: { xs: '50vh', md: 'auto' },
+            height: { xs: '50vh', md: '100%' },
           }}
         >
-          <Box
-            id="mermaid-preview"
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              height: '100%',
-            }}
-          />
+          <TransformableArea
+            ref={transformableRef}
+            style={getTransformStyle()}
+          >
+            <Box
+              id="mermaid-preview"
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            />
+          </TransformableArea>
           
           <Box
             sx={{
@@ -199,6 +297,7 @@ const MermaidEditor = () => {
               gap: '7px',
               padding: '7px',
               borderRadius: '8px',
+              // backgroundColor: theme.palette.background.paper,
             }}
           >
             <Tooltip title="Zoom In">
@@ -211,7 +310,7 @@ const MermaidEditor = () => {
                 <ZoomOutOutlined />
               </IconButton>
             </Tooltip>
-            <Tooltip title="Reset Zoom">
+            <Tooltip title="Reset View">
               <IconButton onClick={handleResetZoom} size="small">
                 <CenterFocusStrongOutlined />
               </IconButton>
@@ -225,7 +324,7 @@ const MermaidEditor = () => {
               </IconButton>
             </Tooltip> */}
           </Box>
-        </Box>
+        </DiagramContainer>
       </Box>
     </>
   );
