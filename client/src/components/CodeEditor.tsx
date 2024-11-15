@@ -138,6 +138,8 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
     
     return code.split('\n').map((line, i) => {
       const coloredLine = line
+        // only escape <br/> tags specifically
+        .replace(/<br\/>/g, '&lt;br/&gt;')
         .replace(/#[A-Fa-f0-9]{6}/g, (match) => 
           `<span style="color: ${colors.hexColor(match)}">${match}</span>`)
         .replace(/\b(graph|TD|LR|TB|RL)\b/g, 
