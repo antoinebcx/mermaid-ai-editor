@@ -51,11 +51,6 @@ const EditorTextarea = styled('textarea')(({ theme }) => ({
   zIndex: 10,
   color: 'transparent',
   caretColor: theme.palette.mode === 'dark' ? theme.palette.common.white : theme.palette.common.black,
-  '&::selection': {
-    backgroundColor: theme.palette.mode === 'dark' 
-      ? theme.palette.primary.dark 
-      : theme.palette.primary.light,
-  },
   '&:focus': {
     outline: 'none',
   },
