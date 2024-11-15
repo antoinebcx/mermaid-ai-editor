@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Box,
   Alert,
@@ -324,7 +324,7 @@ const MermaidEditor = () => {
     try {
         const userMessage: ChatMessage = {
             sender: 'user',
-            content: `${message}\n\n<CURRENT_DIAGRAM>\n${code}\n</CURRENT_DIAGRAM>`
+            content: `<USER_REQUEST>\n${message}\n</USER_REQUEST>\n\n<CURRENT_DIAGRAM>\n${code}\n</CURRENT_DIAGRAM>`
         };
 
         let updatedMessages = [...messages, userMessage];
