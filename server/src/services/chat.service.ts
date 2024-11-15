@@ -31,20 +31,13 @@ export class ChatService {
       const messages = [
         {
           role: 'user' as const,
-          content: this.systemPrompt,
-        },
-        {
-          role: 'assistant' as const,
-          content: 'I understand and will follow these instructions.',
-        },
-        {
-          role: 'user' as const,
           content: userPrompt,
         },
       ];
 
       const response = await this.anthropic.messages.create({
         model: 'claude-3-5-sonnet-20241022',
+        system: this.systemPrompt,
         max_tokens: 1024,
         messages,
       });
