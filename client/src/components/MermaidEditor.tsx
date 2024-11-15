@@ -24,7 +24,7 @@ import { sendChatMessage } from '../api';
 type TouchEvent = React.TouchEvent<HTMLDivElement>;
 
 const NAVBAR_HEIGHT = 64;
-const MAX_HISTORY_LENGTH = 100;
+const MAX_HISTORY_LENGTH = 100000;
 
 const defaultDiagram = `graph TD
     A(Email) --> C[Process Message]
@@ -39,6 +39,16 @@ const defaultDiagram = `graph TD
 interface CodeHistory {
   currentIndex: number;
   history: string[];
+}
+
+interface ChatMessage {
+  sender: 'user' | 'assistant';
+  content: string;
+}
+
+interface APIMessage {
+  role: 'user' | 'assistant';
+  content: string;
 }
 
 const DiagramContainer = styled(Box)(({ theme }) => ({
@@ -66,6 +76,7 @@ const MermaidEditor = () => {
     currentIndex: 0,
     history: [defaultDiagram],
   });
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [error, setError] = useState('');
@@ -274,19 +285,75 @@ const MermaidEditor = () => {
     }
   };
 
+  const truncateMessageHistory = (messages: ChatMessage[], maxLength: number): ChatMessage[] => {
+    let totalLength = 0;
+
+    const truncatedMessages = [];
+    for (let i = messages.length - 1; i >= 0; i--) {
+        const messageLength = messages[i].content.length;
+
+        if (totalLength + messageLength <= maxLength) {
+            truncatedMessages.unshift(messages[i]);
+            totalLength += messageLength;
+        } else if (i === 0) {
+            const remainingLength = maxLength - totalLength;
+            if (remainingLength > 0) {
+                truncatedMessages.unshift({
+                    ...messages[i],
+                    content: messages[i].content.slice(0, remainingLength),
+                });
+                totalLength += remainingLength;
+            } else {
+                truncatedMessages.unshift({
+                    ...messages[i],
+                    content: '[Message truncated]',
+                });
+            }
+        } else {
+            break;
+        }
+    }
+
+    return truncatedMessages;
+  };
+
   const handleChatMessage = async (message: string) => {
     setIsChatLoading(true);
     setChatError(null);
-    
+
     try {
-      const response = await sendChatMessage(message);
-      const cleanedResponse = response.replace(/^```mermaid\n?|\n?```$/g, '').trim();
-      updateCode(cleanedResponse);
+        const userMessage: ChatMessage = {
+            sender: 'user',
+            content: `${message}\n\n<CURRENT_DIAGRAM>\n${code}\n</CURRENT_DIAGRAM>`
+        };
+
+        let updatedMessages = [...messages, userMessage];
+
+        updatedMessages = truncateMessageHistory(updatedMessages, MAX_HISTORY_LENGTH);
+
+        const apiMessages: APIMessage[] = updatedMessages.map((msg) => ({
+            role: msg.sender,
+            content: msg.content
+        }));
+
+        const response = await sendChatMessage(apiMessages);
+
+        const cleanedResponse = response.replace(/^```mermaid\n?|\n?```$/g, '').trim();
+
+        const assistantMessage: ChatMessage = {
+            sender: 'assistant',
+            content: cleanedResponse
+        };
+
+        updatedMessages = [...updatedMessages, assistantMessage];
+        setMessages(updatedMessages);
+
+        updateCode(cleanedResponse);
     } catch (error) {
-      console.error('Chat error:', error);
-      setChatError('Failed to process chat message. Please try again.');
+        console.error('Chat error:', error);
+        setChatError('Failed to process chat message. Please try again.');
     } finally {
-      setIsChatLoading(false);
+        setIsChatLoading(false);
     }
   };
 
