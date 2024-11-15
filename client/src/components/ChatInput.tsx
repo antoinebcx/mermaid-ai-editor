@@ -207,13 +207,9 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSend, isLoading = false, curren
         return `<START DOCUMENT ${index + 1}>\n${fileInfo}\n\n${formattedContent}\n<END DOCUMENT ${index + 1}>`;
       }).join('\n\n');
   
-      const diagramState = currentDiagram ? 
-        `<CURRENT_DIAGRAM>\n${currentDiagram}\n</CURRENT_DIAGRAM>` : '';
-  
       const fullMessage = [
         formattedFiles, 
-        input.trim(),
-        diagramState
+        input.trim()
       ].filter(Boolean).join('\n\n');
       
       onSend(fullMessage);

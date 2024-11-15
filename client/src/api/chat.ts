@@ -1,11 +1,16 @@
 import { API_ENDPOINTS, DEFAULT_HEADERS } from './config';
 
-export const sendChatMessage = async (message: string): Promise<string> => {
+interface APIMessage {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
+export const sendChatMessage = async (messages: APIMessage[]): Promise<string> => {
   try {
     const response = await fetch(API_ENDPOINTS.CHAT, {
       method: 'POST',
       headers: DEFAULT_HEADERS,
-      body: JSON.stringify({ message }),
+      body: JSON.stringify({ messages }),
     });
 
     if (!response.ok) {

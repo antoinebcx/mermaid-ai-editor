@@ -12,6 +12,8 @@ import {
   ZoomInOutlined,
   ZoomOutOutlined,
   CenterFocusStrongOutlined,
+  UndoOutlined,
+  RedoOutlined,
   SaveOutlined,
 } from '@mui/icons-material';
 import mermaid from 'mermaid';
@@ -22,6 +24,7 @@ import { sendChatMessage } from '../api';
 type TouchEvent = React.TouchEvent<HTMLDivElement>;
 
 const NAVBAR_HEIGHT = 64;
+const MAX_HISTORY_LENGTH = 100000;
 
 const defaultDiagram = `graph TD
     A(Email) --> C[Process Message]
@@ -33,12 +36,26 @@ const defaultDiagram = `graph TD
     E --> H(Update Inventory)
     F --> I(Send Rejection Notice)`;
 
+interface CodeHistory {
+  currentIndex: number;
+  history: string[];
+}
+
+interface ChatMessage {
+  sender: 'user' | 'assistant';
+  content: string;
+}
+
+interface APIMessage {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
 const DiagramContainer = styled(Box)(({ theme }) => ({
   width: '100%',
   height: '100%',
   position: 'relative',
   overflow: 'hidden',
-  cursor: 'grab',
   '&:active': {
     cursor: 'grabbing',
   },
@@ -55,9 +72,14 @@ const TransformableArea = styled(Box)({
 const MermaidEditor = () => {
   const theme = useTheme();
   const [code, setCode] = useState<string>(defaultDiagram);
-  const [error, setError] = useState('');
-  const [zoom, setZoom] = useState(1);
+  const [codeHistory, setCodeHistory] = useState<CodeHistory>({
+    currentIndex: 0,
+    history: [defaultDiagram],
+  });
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [error, setError] = useState('');
   const [isDragging, setIsDragging] = useState(false);
   const [isChatLoading, setIsChatLoading] = useState(false);
   const [chatError, setChatError] = useState<string | null>(null);
@@ -66,6 +88,7 @@ const MermaidEditor = () => {
   
   const containerRef = useRef<HTMLDivElement>(null);
   const transformableRef = useRef<HTMLDivElement>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     mermaid.initialize({
@@ -91,6 +114,27 @@ const MermaidEditor = () => {
     renderDiagram();
   }, [code, zoom, theme.palette.mode]);
 
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (e.metaKey || e.ctrlKey) {
+        if (e.key === 'z') {
+          e.preventDefault();
+          if (e.shiftKey) {
+            handleRedo();
+          } else {
+            handleUndo();
+          }
+        } else if (e.key === 'y') {
+          e.preventDefault();
+          handleRedo();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [codeHistory.currentIndex, codeHistory.history]);
+
   const renderDiagram = async () => {
     try {
       const element = document.getElementById('mermaid-preview');
@@ -113,20 +157,69 @@ const MermaidEditor = () => {
     }
   };
 
-  const handleZoomIn = () => setZoom(prev => Math.min(prev + 0.1, 2));
-  const handleZoomOut = () => setZoom(prev => Math.max(prev - 0.1, 0.5));
+  const updateCode = (newCode: string) => {
+    // immediate update
+    setCode(newCode);
+
+    // debounced history update
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+
+    timeoutRef.current = setTimeout(() => {
+      setCodeHistory(current => {
+        const newHistory = [
+          ...current.history.slice(0, current.currentIndex + 1),
+          newCode,
+        ].slice(-MAX_HISTORY_LENGTH);
+
+        return {
+          history: newHistory,
+          currentIndex: newHistory.length - 1,
+        };
+      });
+    }, 500);
+  };
+
+  const canUndo = codeHistory.currentIndex > 0;
+  const canRedo = codeHistory.currentIndex < codeHistory.history.length - 1;
+
+  const handleUndo = () => {
+    if (!canUndo) return;
+    const newIndex = codeHistory.currentIndex - 1;
+    const previousCode = codeHistory.history[newIndex];
+    setCode(previousCode);
+    setCodeHistory(current => ({
+      ...current,
+      currentIndex: newIndex,
+    }));
+  };
+
+  const handleRedo = () => {
+    if (!canRedo) return;
+    const newIndex = codeHistory.currentIndex + 1;
+    const nextCode = codeHistory.history[newIndex];
+    setCode(nextCode);
+    setCodeHistory(current => ({
+      ...current,
+      currentIndex: newIndex,
+    }));
+  };
+
+  const handleZoomIn = () => setZoom(prev => Math.min(prev + 0.1, 4));
+  const handleZoomOut = () => setZoom(prev => Math.max(prev - 0.1, 0.1));
   const handleResetZoom = () => {
     setZoom(1);
     setPosition({ x: 0, y: 0 });
   };
 
-  const handleMouseDown = (e: any) => {
+  const handleMouseDown = (e: React.MouseEvent) => {
     if (e.button !== 0) return;
     setIsDragging(true);
     setLastPosition({ x: e.clientX, y: e.clientY });
   };
   
-  const handleMouseMove = (e: any) => {
+  const handleMouseMove = (e: React.MouseEvent) => {
     if (!isDragging) return;
     
     const deltaX = e.clientX - lastPosition.x;
@@ -148,7 +241,7 @@ const MermaidEditor = () => {
     if (e.ctrlKey || Math.abs(e.deltaY) < 50) {
       e.preventDefault();
       const delta = -e.deltaY * 0.01;
-      setZoom(prev => Math.min(Math.max(prev + delta, 0.5), 2));
+      setZoom(prev => Math.min(Math.max(prev + delta, 0.1), 4));
     }
   };
 
@@ -173,7 +266,7 @@ const MermaidEditor = () => {
       const delta = newDistance - touchDistance;
       const scaleChange = delta > 0 ? 0.02 : -0.02;
       
-      setZoom(prev => Math.min(Math.max(prev + scaleChange, 0.5), 2));
+      setZoom(prev => Math.min(Math.max(prev + scaleChange, 0.1), 4));
       setTouchDistance(newDistance);
     }
   };
@@ -191,21 +284,76 @@ const MermaidEditor = () => {
       console.error('Failed to save diagram:', err);
     }
   };
+
+  const truncateMessageHistory = (messages: ChatMessage[], maxLength: number): ChatMessage[] => {
+    let totalLength = 0;
+
+    const truncatedMessages = [];
+    for (let i = messages.length - 1; i >= 0; i--) {
+        const messageLength = messages[i].content.length;
+
+        if (totalLength + messageLength <= maxLength) {
+            truncatedMessages.unshift(messages[i]);
+            totalLength += messageLength;
+        } else if (i === 0) {
+            const remainingLength = maxLength - totalLength;
+            if (remainingLength > 0) {
+                truncatedMessages.unshift({
+                    ...messages[i],
+                    content: messages[i].content.slice(0, remainingLength),
+                });
+                totalLength += remainingLength;
+            } else {
+                truncatedMessages.unshift({
+                    ...messages[i],
+                    content: '[Message truncated]',
+                });
+            }
+        } else {
+            break;
+        }
+    }
+
+    return truncatedMessages;
+  };
+
   const handleChatMessage = async (message: string) => {
     setIsChatLoading(true);
     setChatError(null);
-    
+
     try {
-      const response = await sendChatMessage(message);
-      
-      // response is a Mermaid diagram, update the code
-      // add validation here to ensure it's valid Mermaid syntax
-      setCode(response);
+        const userMessage: ChatMessage = {
+            sender: 'user',
+            content: `<USER_REQUEST>\n${message}\n</USER_REQUEST>\n\n<CURRENT_DIAGRAM>\n${code}\n</CURRENT_DIAGRAM>`
+        };
+
+        let updatedMessages = [...messages, userMessage];
+
+        updatedMessages = truncateMessageHistory(updatedMessages, MAX_HISTORY_LENGTH);
+
+        const apiMessages: APIMessage[] = updatedMessages.map((msg) => ({
+            role: msg.sender,
+            content: msg.content
+        }));
+
+        const response = await sendChatMessage(apiMessages);
+
+        const cleanedResponse = response.replace(/^```mermaid\n?|\n?```$/g, '').trim();
+
+        const assistantMessage: ChatMessage = {
+            sender: 'assistant',
+            content: cleanedResponse
+        };
+
+        updatedMessages = [...updatedMessages, assistantMessage];
+        setMessages(updatedMessages);
+
+        updateCode(cleanedResponse);
     } catch (error) {
-      console.error('Chat error:', error);
-      setChatError('Failed to process chat message. Please try again.');
+        console.error('Chat error:', error);
+        setChatError('Failed to process chat message. Please try again.');
     } finally {
-      setIsChatLoading(false);
+        setIsChatLoading(false);
     }
   };
 
@@ -246,11 +394,11 @@ const MermaidEditor = () => {
         >
           <CodeEditor
             value={code}
-            onChange={(e) => setCode(e.target.value)}
+            onChange={(e) => updateCode(e.target.value)}
             placeholder="Enter Mermaid diagram code here..."
           />
           <ChatInput 
-            onSend={(message) => handleChatMessage(message)}
+            onSend={handleChatMessage}
             isLoading={isChatLoading}
             currentDiagram={code}
           />
@@ -284,6 +432,36 @@ const MermaidEditor = () => {
               }}
             />
           </TransformableArea>
+
+          <Box
+            sx={{
+              position: 'absolute',
+              bottom: '20px',
+              left: '20px',
+              zIndex: 1000,
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: '7px',
+              padding: '7px',
+              borderRadius: '8px',
+            }}
+          >
+            <Tooltip title="Undo (Ctrl/⌘+Z)">
+              <span>
+                <IconButton onClick={handleUndo} size="small" disabled={!canUndo}>
+                  <UndoOutlined />
+                </IconButton>
+              </span>
+            </Tooltip>
+            <Tooltip title="Redo (Ctrl/⌘+Shift+Z or Ctrl/⌘+Y)">
+              <span>
+                <IconButton onClick={handleRedo} size="small" disabled={!canRedo}>
+                  <RedoOutlined />
+                </IconButton>
+              </span>
+            </Tooltip>
+          </Box>
           
           <Box
             sx={{
@@ -297,7 +475,6 @@ const MermaidEditor = () => {
               gap: '7px',
               padding: '7px',
               borderRadius: '8px',
-              // backgroundColor: theme.palette.background.paper,
             }}
           >
             <Tooltip title="Zoom In">
