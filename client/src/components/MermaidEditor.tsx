@@ -38,7 +38,6 @@ const DiagramContainer = styled(Box)(({ theme }) => ({
   height: '100%',
   position: 'relative',
   overflow: 'hidden',
-  cursor: 'grab',
   '&:active': {
     cursor: 'grabbing',
   },
@@ -113,8 +112,8 @@ const MermaidEditor = () => {
     }
   };
 
-  const handleZoomIn = () => setZoom(prev => Math.min(prev + 0.1, 2));
-  const handleZoomOut = () => setZoom(prev => Math.max(prev - 0.1, 0.5));
+  const handleZoomIn = () => setZoom(prev => Math.min(prev + 0.1, 4));
+  const handleZoomOut = () => setZoom(prev => Math.max(prev - 0.1, 0.1));
   const handleResetZoom = () => {
     setZoom(1);
     setPosition({ x: 0, y: 0 });
@@ -148,7 +147,7 @@ const MermaidEditor = () => {
     if (e.ctrlKey || Math.abs(e.deltaY) < 50) {
       e.preventDefault();
       const delta = -e.deltaY * 0.01;
-      setZoom(prev => Math.min(Math.max(prev + delta, 0.5), 2));
+      setZoom(prev => Math.min(Math.max(prev + delta, 0.1), 4));
     }
   };
 
@@ -173,7 +172,7 @@ const MermaidEditor = () => {
       const delta = newDistance - touchDistance;
       const scaleChange = delta > 0 ? 0.02 : -0.02;
       
-      setZoom(prev => Math.min(Math.max(prev + scaleChange, 0.5), 2));
+      setZoom(prev => Math.min(Math.max(prev + scaleChange, 0.1), 4));
       setTouchDistance(newDistance);
     }
   };
