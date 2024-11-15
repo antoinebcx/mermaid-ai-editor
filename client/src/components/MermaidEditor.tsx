@@ -197,10 +197,8 @@ const MermaidEditor = () => {
     
     try {
       const response = await sendChatMessage(message);
-      
-      // response is a Mermaid diagram, update the code
-      // add validation here to ensure it's valid Mermaid syntax
-      setCode(response);
+      const cleanedResponse = response.replace(/^```mermaid\n?|\n?```$/g, '').trim();
+      setCode(cleanedResponse);
     } catch (error) {
       console.error('Chat error:', error);
       setChatError('Failed to process chat message. Please try again.');
