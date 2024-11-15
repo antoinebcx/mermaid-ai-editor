@@ -4,7 +4,10 @@ import { ApiError } from '../middleware/error.middleware';
 
 interface ChatRequest extends Request {
   body: {
-    message: string;
+    messages: Array<{
+      role: 'user' | 'assistant';
+      content: string;
+    }>;
   }
 }
 
@@ -13,18 +16,12 @@ export class ChatController {
 
   processMessage = async (req: ChatRequest, res: Response, next: NextFunction) => {
     try {
-      const { message } = req.body;
+      const { messages } = req.body;
+      if (!messages || !Array.isArray(messages)) {
+        throw new ApiError(400, 'Valid messages array is required');
+      }
       
-      if (!message || typeof message !== 'string') {
-        throw new ApiError(400, 'Valid message is required');
-      }
-
-      if (message.trim().length === 0) {
-        throw new ApiError(400, 'Message cannot be empty');
-      }
-
-      const response = await this.chatService.generateResponse(message);
-
+      const response = await this.chatService.generateResponse(messages);
       res.status(200).json({
         success: true,
         data: {
@@ -32,7 +29,6 @@ export class ChatController {
           timestamp: new Date().toISOString(),
         }
       });
-
     } catch (error) {
       if (error instanceof ApiError) {
         next(error);
