@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useState } from 'react';
+import React, { ChangeEvent, useState, useRef, UIEvent } from 'react';
 import { useTheme, styled } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
@@ -41,13 +41,14 @@ const EditorTextarea = styled('textarea')(({ theme }) => ({
   paddingLeft: '3rem',
   paddingRight: '1rem',
   paddingTop: '1rem',
-  paddingBottom: '1rem',
+  paddingBottom: '8rem',
   fontFamily: 'Consolas, Monaco, "Andale Mono", monospace',
   fontSize: '0.875rem',
   lineHeight: '1.5',
   backgroundColor: 'transparent',
   resize: 'none',
   overflow: 'auto',
+  whiteSpace: 'pre',
   zIndex: 10,
   color: 'transparent',
   caretColor: theme.palette.mode === 'dark' ? theme.palette.common.white : theme.palette.common.black,
@@ -65,7 +66,7 @@ const SyntaxHighlight = styled(Box)(({ theme }) => ({
   paddingLeft: '3rem',
   paddingRight: '1rem',
   paddingTop: '1rem',
-  paddingBottom: '1rem',
+  paddingBottom: '8rem',
   fontFamily: 'Consolas, Monaco, "Andale Mono", monospace',
   fontSize: '0.875rem',
   lineHeight: '1.5',
@@ -81,10 +82,8 @@ const SyntaxHighlight = styled(Box)(({ theme }) => ({
 const LineNumbers = styled(Box)(({ theme }) => ({
   position: 'absolute',
   left: 0,
-  top: 0,
-  bottom: 0,
+  top: '1rem',
   width: '3rem',
-  paddingTop: '1rem',
   textAlign: 'right',
   paddingRight: '1rem',
   fontSize: '0.875rem',
@@ -92,6 +91,7 @@ const LineNumbers = styled(Box)(({ theme }) => ({
   color: theme.palette.text.secondary,
   opacity: 0.5,
   userSelect: 'none',
+  pointerEvents: 'none',
 }));
 
 const CodeEditor: React.FC<CodeEditorProps> = ({
@@ -102,6 +102,21 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
 }) => {
   const theme = useTheme();
   const [copied, setCopied] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const highlightRef = useRef<HTMLDivElement>(null);
+
+  const syncScroll = (e: UIEvent<HTMLElement>) => {
+    const source = e.target as HTMLElement;
+    if (textareaRef.current && highlightRef.current) {
+      if (source === textareaRef.current) {
+        highlightRef.current.scrollTop = source.scrollTop;
+        highlightRef.current.scrollLeft = source.scrollLeft;
+      } else {
+        textareaRef.current.scrollTop = source.scrollTop;
+        textareaRef.current.scrollLeft = source.scrollLeft;
+      }
+    }
+  };
 
   const getColors = () => ({
     keyword: theme.palette.mode === 'dark' ? '#B39DDB' : '#9575CD',
@@ -157,21 +172,25 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
       </Tooltip>
 
       <EditorTextarea
+        ref={textareaRef}
         value={value}
         onChange={onChange}
+        onScroll={syncScroll}
         placeholder={placeholder}
         spellCheck={false}
       />
       
-      <SyntaxHighlight>
+      <SyntaxHighlight
+        ref={highlightRef}
+        onScroll={syncScroll}
+      >
+        <LineNumbers>
+          {lineNumbers.map((num) => (
+            <div key={num}>{num}</div>
+          ))}
+        </LineNumbers>
         {highlightSyntax(value)}
       </SyntaxHighlight>
-
-      <LineNumbers>
-        {lineNumbers.map((num) => (
-          <div key={num}>{num}</div>
-        ))}
-      </LineNumbers>
     </EditorContainer>
   );
 };
