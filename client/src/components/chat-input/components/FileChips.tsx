@@ -1,6 +1,6 @@
 import { Box, Chip, useTheme } from '@mui/material';
 import { InsertDriveFileOutlined } from '@mui/icons-material';
-import { UploadedFile } from './chat-input/types';
+import { UploadedFile } from '../types';
 
 interface FileChipsProps {
   files: UploadedFile[];

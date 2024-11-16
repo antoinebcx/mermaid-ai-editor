@@ -1,15 +1,15 @@
 import React, { useEffect, useRef } from 'react';
 import { Box, Alert, useTheme } from '@mui/material';
 import { DiagramContainer, TransformableArea } from './diagram-editor/styled';
-import { DiagramControls } from './DiagramControls';
+import { DiagramControls } from './diagram-editor/components/DiagramControls';
 import { useCodeHistory } from './diagram-editor/hooks/useCodeHistory';
 import { useZoomPan } from './diagram-editor/hooks/useZoomPan';
 import { useDiagramRenderer } from './diagram-editor/hooks/useDiagramRenderer';
 import { useChat } from './diagram-editor/hooks/useChat';
 import { useDiagramInteraction } from './diagram-editor/hooks/useDiagramInteraction';
 import { NAVBAR_HEIGHT } from './diagram-editor/constants';
-import CodeEditor from './CodeEditor';
-import ChatInput from './ChatInput';
+import CodeEditor from './code-editor/CodeEditor';
+import ChatInput from './chat-input/ChatInput';
 
 const MermaidEditor = () => {
   const theme = useTheme();

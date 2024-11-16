@@ -1,12 +1,12 @@
 import React, { useState, useRef } from 'react';
 import { Box, Alert, useTheme } from '@mui/material';
 import { useDropzone } from 'react-dropzone';
-import { FileChips } from './FileChips';
-import { InputField } from './InputField';
-import { useFileProcessing } from './chat-input/hooks/useFileProcessing';
-import { usePdfLoader } from './chat-input/hooks/usePdfLoader';
-import { ChatInputProps } from './chat-input/types';
-import { ACCEPTED_FILES } from './chat-input/constants';
+import { FileChips } from './components/FileChips';
+import { InputField } from './components/InputField';
+import { useFileProcessing } from './hooks/useFileProcessing';
+import { usePdfLoader } from './hooks/usePdfLoader';
+import { ChatInputProps } from './types';
+import { ACCEPTED_FILES } from './constants';
 
 const ChatInput: React.FC<ChatInputProps> = ({ onSend, isLoading = false }) => {
   const theme = useTheme();
