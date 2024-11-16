@@ -86,7 +86,7 @@ export const MermaidElementEditor = ({ element, anchorEl, onClose, onUpdate, zoo
           elevation={0}
           sx={{ 
             p: 0,
-            width: 160,
+            width: 70,
             borderRadius: 1,
             marginBottom: 1
           }}
@@ -129,12 +129,12 @@ export const MermaidElementEditor = ({ element, anchorEl, onClose, onUpdate, zoo
                 }[selected as ElementType];
 
                 const selectedLabel = {
-                  default: 'Rectangle',
-                  participant: 'Round',
-                  decision: 'Diamond',
-                  note: 'Note',
-                  action: 'Action',
-                  loop: 'Loop'
+                  default: '',
+                  participant: '',
+                  decision: '',
+                  note: '',
+                  action: '',
+                  loop: ''
                 }[selected as ElementType];
 
                 return (
@@ -149,37 +149,31 @@ export const MermaidElementEditor = ({ element, anchorEl, onClose, onUpdate, zoo
                 <ListItemIcon>
                   <RectangleIcon fontSize="small" />
                 </ListItemIcon>
-                Rectangle
               </MenuItem>
               <MenuItem value="participant">
                 <ListItemIcon>
                   <RoundIcon fontSize="small" />
                 </ListItemIcon>
-                Round
               </MenuItem>
               <MenuItem value="decision">
                 <ListItemIcon>
                   <DiamondIcon fontSize="small" />
                 </ListItemIcon>
-                Diamond
               </MenuItem>
               <MenuItem value="note">
                 <ListItemIcon>
                   <NoteIcon fontSize="small" />
                 </ListItemIcon>
-                Note
               </MenuItem>
               <MenuItem value="action">
                 <ListItemIcon>
                   <ActionIcon fontSize="small" />
                 </ListItemIcon>
-                Action
               </MenuItem>
               <MenuItem value="loop">
                 <ListItemIcon>
                   <LoopIcon fontSize="small" />
                 </ListItemIcon>
-                Loop
               </MenuItem>
             </Select>
           </FormControl>
