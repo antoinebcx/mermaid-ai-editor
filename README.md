@@ -4,11 +4,11 @@ Create and edit Mermaid flow charts with AI (Claude).
 
 Upload text, code files, PDF and Word documents.
 
-<img width="1321" alt="image" src="https://github.com/user-attachments/assets/d58cdd8a-9a7a-42cd-896d-bcf1d0475e98">
+<img width="1321" alt="image" src="https://github.com/user-attachments/assets/003fb997-d4a6-474c-aa97-6b3f19cabfa3">
 
 _
 
-<img width="1321" alt="image" src="https://github.com/user-attachments/assets/5c709e1a-4a3e-426a-bacc-7bd5066e3e63">
+<img width="1321" alt="image" src="https://github.com/user-attachments/assets/5f867cc5-6046-476d-904a-8ee2135b09ae">
 
 ---
 
@@ -28,3 +28,5 @@ flowchart LR
     Code --> Edit
     Create & Edit --> Result(Flow chart)
 ```
+
+GitHub supports Mermaid in READMEs!
