@@ -1,118 +1,54 @@
-import React, { useState, useEffect, useRef } from 'react';
-import {
-  Box,
-  Alert,
-  Tooltip,
-  Typography,
-  IconButton,
-  useTheme,
-  styled,
-} from '@mui/material';
-import {
-  ZoomInOutlined,
-  ZoomOutOutlined,
-  CenterFocusStrongOutlined,
-  UndoOutlined,
-  RedoOutlined,
-  SaveOutlined,
-} from '@mui/icons-material';
-import mermaid from 'mermaid';
-import ChatInput from './ChatInput';
-import CodeEditor from './CodeEditor';
-import { sendChatMessage } from '../api';
-
-type TouchEvent = React.TouchEvent<HTMLDivElement>;
-
-const NAVBAR_HEIGHT = 64;
-const MAX_HISTORY_LENGTH = 100000;
-
-const defaultDiagram = `graph TD
-    A(Email) --> C[Process Message]
-    B(SMS) --> C
-    C --> D{Valid Order?}
-    D -->|Yes| E[Create Order]
-    D -->|No| F[Reject Request]
-    E --> G(Send Confirmation)
-    E --> H(Update Inventory)
-    F --> I(Send Rejection Notice)`;
-
-interface CodeHistory {
-  currentIndex: number;
-  history: string[];
-}
-
-interface ChatMessage {
-  sender: 'user' | 'assistant';
-  content: string;
-}
-
-interface APIMessage {
-  role: 'user' | 'assistant';
-  content: string;
-}
-
-const DiagramContainer = styled(Box)(({ theme }) => ({
-  width: '100%',
-  height: '100%',
-  position: 'relative',
-  overflow: 'hidden',
-  '&:active': {
-    cursor: 'grabbing',
-  },
-  backgroundColor: theme.palette.mode === 'light' ? theme.palette.grey[50] : '#161616',
-}));
-
-const TransformableArea = styled(Box)({
-  position: 'absolute',
-  top: '50%',
-  left: '50%',
-  transformOrigin: 'center center',
-});
+import React, { useEffect, useRef } from 'react';
+import { Box, Alert, useTheme } from '@mui/material';
+import { DiagramContainer, TransformableArea } from './diagram-editor/styled';
+import { DiagramControls } from './diagram-editor/components/DiagramControls';
+import { useCodeHistory } from './diagram-editor/hooks/useCodeHistory';
+import { useZoomPan } from './diagram-editor/hooks/useZoomPan';
+import { useDiagramRenderer } from './diagram-editor/hooks/useDiagramRenderer';
+import { useChat } from './diagram-editor/hooks/useChat';
+import { useDiagramInteraction } from './diagram-editor/hooks/useDiagramInteraction';
+import { NAVBAR_HEIGHT } from './diagram-editor/constants';
+import CodeEditor from './code-editor/CodeEditor';
+import ChatInput from './chat-input/ChatInput';
 
 const MermaidEditor = () => {
   const theme = useTheme();
-  const [code, setCode] = useState<string>(defaultDiagram);
-  const [codeHistory, setCodeHistory] = useState<CodeHistory>({
-    currentIndex: 0,
-    history: [defaultDiagram],
-  });
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [position, setPosition] = useState({ x: 0, y: 0 });
-  const [zoom, setZoom] = useState(1);
-  const [error, setError] = useState('');
-  const [isDragging, setIsDragging] = useState(false);
-  const [isChatLoading, setIsChatLoading] = useState(false);
-  const [chatError, setChatError] = useState<string | null>(null);
-  const [lastPosition, setLastPosition] = useState({ x: 0, y: 0 });
-  const [touchDistance, setTouchDistance] = useState<number | null>(null);
-  
-  const containerRef = useRef<HTMLDivElement>(null);
+  const {
+    code,
+    updateCode,
+    handleUndo,
+    handleRedo,
+    canUndo,
+    canRedo,
+  } = useCodeHistory();
+
+  const zoomPan = useZoomPan();
+  const {
+    zoom,
+    handleZoomIn,
+    handleZoomOut,
+    handleResetZoom,
+    getTransformStyle,
+  } = zoomPan;
+
+  const { error } = useDiagramRenderer(code, zoom, theme.palette.mode);
+  const {
+    chatError,
+    isChatLoading,
+    handleChatMessage,
+  } = useChat(code, updateCode);
+
+  const {
+    handleMouseDown,
+    handleMouseMove,
+    handleMouseUp,
+    handleWheel,
+    handleTouchStart,
+    handleTouchMove,
+    handleTouchEnd,
+  } = useDiagramInteraction(zoomPan);
+
   const transformableRef = useRef<HTMLDivElement>(null);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  useEffect(() => {
-    mermaid.initialize({
-      startOnLoad: true,
-      theme: theme.palette.mode === 'dark' ? 'dark' : 'default',
-      securityLevel: 'loose',
-      flowchart: {
-        htmlLabels: true,
-        useMaxWidth: true,
-        curve: 'basis',
-      },
-    });
-  }, [theme.palette.mode]);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      renderDiagram();
-    }, 100);
-    return () => clearTimeout(timer);
-  }, []);
-
-  useEffect(() => {
-    renderDiagram();
-  }, [code, zoom, theme.palette.mode]);
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
@@ -130,250 +66,15 @@ const MermaidEditor = () => {
         }
       }
     };
-
+  
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [codeHistory.currentIndex, codeHistory.history]);
-
-  const renderDiagram = async () => {
-    try {
-      const element = document.getElementById('mermaid-preview');
-      if (!element) return;
-
-      element.innerHTML = '';
-      const { svg } = await mermaid.render('mermaid-diagram', code);
-      element.innerHTML = svg;
-
-      const svgElement = element.querySelector('svg');
-      if (svgElement) {
-        svgElement.style.transform = 'none';
-        svgElement.style.maxWidth = '100%';
-        svgElement.style.maxHeight = '100%';
-      }
-
-      setError('');
-    } catch (err: any) {
-      setError(err.message);
-    }
-  };
-
-  const updateCode = (newCode: string) => {
-    // immediate update
-    setCode(newCode);
-
-    // debounced history update
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
-
-    timeoutRef.current = setTimeout(() => {
-      setCodeHistory(current => {
-        const newHistory = [
-          ...current.history.slice(0, current.currentIndex + 1),
-          newCode,
-        ].slice(-MAX_HISTORY_LENGTH);
-
-        return {
-          history: newHistory,
-          currentIndex: newHistory.length - 1,
-        };
-      });
-    }, 500);
-  };
-
-  const canUndo = codeHistory.currentIndex > 0;
-  const canRedo = codeHistory.currentIndex < codeHistory.history.length - 1;
-
-  const handleUndo = () => {
-    if (!canUndo) return;
-    const newIndex = codeHistory.currentIndex - 1;
-    const previousCode = codeHistory.history[newIndex];
-    setCode(previousCode);
-    setCodeHistory(current => ({
-      ...current,
-      currentIndex: newIndex,
-    }));
-  };
-
-  const handleRedo = () => {
-    if (!canRedo) return;
-    const newIndex = codeHistory.currentIndex + 1;
-    const nextCode = codeHistory.history[newIndex];
-    setCode(nextCode);
-    setCodeHistory(current => ({
-      ...current,
-      currentIndex: newIndex,
-    }));
-  };
-
-  const handleZoomIn = () => setZoom(prev => Math.min(prev + 0.1, 4));
-  const handleZoomOut = () => setZoom(prev => Math.max(prev - 0.1, 0.1));
-  const handleResetZoom = () => {
-    setZoom(1);
-    setPosition({ x: 0, y: 0 });
-  };
-
-  const handleMouseDown = (e: React.MouseEvent) => {
-    if (e.button !== 0) return;
-    setIsDragging(true);
-    setLastPosition({ x: e.clientX, y: e.clientY });
-  };
-  
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging) return;
-    
-    const deltaX = e.clientX - lastPosition.x;
-    const deltaY = e.clientY - lastPosition.y;
-    
-    setPosition(prev => ({
-      x: prev.x + deltaX,
-      y: prev.y + deltaY
-    }));
-    
-    setLastPosition({ x: e.clientX, y: e.clientY });
-  };
-
-  const handleMouseUp = () => {
-    setIsDragging(false);
-  };
-
-  const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
-    if (e.ctrlKey || Math.abs(e.deltaY) < 50) {
-      e.preventDefault();
-      const delta = -e.deltaY * 0.01;
-      setZoom(prev => Math.min(Math.max(prev + delta, 0.1), 4));
-    }
-  };
-
-  const handleTouchStart = (e: TouchEvent) => {
-    if (e.touches.length === 2) {
-      e.preventDefault();
-      const distance = Math.hypot(
-        e.touches[0].clientX - e.touches[1].clientX,
-        e.touches[0].clientY - e.touches[1].clientY
-      );
-      setTouchDistance(distance);
-    }
-  };
-  
-  const handleTouchMove = (e: TouchEvent) => {
-    if (e.touches.length === 2 && touchDistance !== null) {
-      e.preventDefault();
-      const newDistance = Math.hypot(
-        e.touches[0].clientX - e.touches[1].clientX,
-        e.touches[0].clientY - e.touches[1].clientY
-      );
-      const delta = newDistance - touchDistance;
-      const scaleChange = delta > 0 ? 0.02 : -0.02;
-      
-      setZoom(prev => Math.min(Math.max(prev + scaleChange, 0.1), 4));
-      setTouchDistance(newDistance);
-    }
-  };
-
-  const handleSave = async () => {
-    try {
-      await fetch('http://localhost:3001/api/diagrams', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ diagram: code }),
-      });
-    } catch (err) {
-      console.error('Failed to save diagram:', err);
-    }
-  };
-
-  const truncateMessageHistory = (messages: ChatMessage[], maxLength: number): ChatMessage[] => {
-    let totalLength = 0;
-
-    const truncatedMessages = [];
-    for (let i = messages.length - 1; i >= 0; i--) {
-        const messageLength = messages[i].content.length;
-
-        if (totalLength + messageLength <= maxLength) {
-            truncatedMessages.unshift(messages[i]);
-            totalLength += messageLength;
-        } else if (i === 0) {
-            const remainingLength = maxLength - totalLength;
-            if (remainingLength > 0) {
-                truncatedMessages.unshift({
-                    ...messages[i],
-                    content: messages[i].content.slice(0, remainingLength),
-                });
-                totalLength += remainingLength;
-            } else {
-                truncatedMessages.unshift({
-                    ...messages[i],
-                    content: '[Message truncated]',
-                });
-            }
-        } else {
-            break;
-        }
-    }
-
-    return truncatedMessages;
-  };
-
-  const handleChatMessage = async (message: string) => {
-    setIsChatLoading(true);
-    setChatError(null);
-
-    try {
-        const userMessage: ChatMessage = {
-            sender: 'user',
-            content: `<USER_REQUEST>\n${message}\n</USER_REQUEST>\n\n<CURRENT_DIAGRAM>\n${code}\n</CURRENT_DIAGRAM>`
-        };
-
-        let updatedMessages = [...messages, userMessage];
-
-        updatedMessages = truncateMessageHistory(updatedMessages, MAX_HISTORY_LENGTH);
-
-        const apiMessages: APIMessage[] = updatedMessages.map((msg) => ({
-            role: msg.sender,
-            content: msg.content
-        }));
-
-        const response = await sendChatMessage(apiMessages);
-
-        const cleanedResponse = response.replace(/^```mermaid\n?|\n?```$/g, '').trim();
-
-        const assistantMessage: ChatMessage = {
-            sender: 'assistant',
-            content: cleanedResponse
-        };
-
-        updatedMessages = [...updatedMessages, assistantMessage];
-        setMessages(updatedMessages);
-
-        updateCode(cleanedResponse);
-    } catch (error) {
-        console.error('Chat error:', error);
-        setChatError('Failed to process chat message. Please try again.');
-    } finally {
-        setIsChatLoading(false);
-    }
-  };
-
-  const getTransformStyle = () => ({
-    transform: `translate(calc(-50% + ${position.x}px), calc(-50% + ${position.y}px)) scale(${zoom})`,
-  });
+  }, [handleUndo, handleRedo]);
 
   return (
     <>
-      {error && (
-        <Alert severity="error" sx={{ m: 2 }}>
-          {error}
-        </Alert>
-      )}
-
-      {chatError && (
-        <Alert severity="error" sx={{ m: 2 }}>
-          {chatError}
-        </Alert>
-      )}
+      {error && <Alert severity="error" sx={{ m: 2 }}>{error}</Alert>}
+      {chatError && <Alert severity="error" sx={{ m: 2 }}>{chatError}</Alert>}
 
       <Box sx={{ 
         display: 'flex', 
@@ -405,7 +106,6 @@ const MermaidEditor = () => {
         </Box>
 
         <DiagramContainer
-          ref={containerRef}
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
@@ -413,7 +113,7 @@ const MermaidEditor = () => {
           onWheel={handleWheel}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
-          onTouchEnd={() => setTouchDistance(null)}
+          onTouchEnd={handleTouchEnd}
           sx={{
             width: { xs: '100%', md: '50%' },
             height: { xs: '50vh', md: '100%' },
@@ -433,74 +133,16 @@ const MermaidEditor = () => {
             />
           </TransformableArea>
 
-          <Box
-            sx={{
-              position: 'absolute',
-              bottom: '20px',
-              left: '20px',
-              zIndex: 1000,
-              display: 'flex',
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: '7px',
-              padding: '7px',
-              borderRadius: '8px',
-            }}
-          >
-            <Tooltip title="Undo (Ctrl/⌘+Z)">
-              <span>
-                <IconButton onClick={handleUndo} size="small" disabled={!canUndo}>
-                  <UndoOutlined />
-                </IconButton>
-              </span>
-            </Tooltip>
-            <Tooltip title="Redo (Ctrl/⌘+Shift+Z or Ctrl/⌘+Y)">
-              <span>
-                <IconButton onClick={handleRedo} size="small" disabled={!canRedo}>
-                  <RedoOutlined />
-                </IconButton>
-              </span>
-            </Tooltip>
-          </Box>
-          
-          <Box
-            sx={{
-              position: 'absolute',
-              bottom: '20px',
-              right: '20px',
-              zIndex: 1000,
-              display: 'flex',
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: '7px',
-              padding: '7px',
-              borderRadius: '8px',
-            }}
-          >
-            <Tooltip title="Zoom In">
-              <IconButton onClick={handleZoomIn} size="small">
-                <ZoomInOutlined />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Zoom Out">
-              <IconButton onClick={handleZoomOut} size="small">
-                <ZoomOutOutlined />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Reset View">
-              <IconButton onClick={handleResetZoom} size="small">
-                <CenterFocusStrongOutlined />
-              </IconButton>
-            </Tooltip>
-            <Typography variant="body2" sx={{ minWidth: '45px', textAlign: 'center' }}>
-              {Math.round(zoom * 100)}%
-            </Typography>
-            {/* <Tooltip title="Save Diagram">
-              <IconButton onClick={handleSave} size="small">
-                <SaveOutlined />
-              </IconButton>
-            </Tooltip> */}
-          </Box>
+          <DiagramControls
+            zoom={zoom}
+            canUndo={canUndo}
+            canRedo={canRedo}
+            onZoomIn={handleZoomIn}
+            onZoomOut={handleZoomOut}
+            onResetZoom={handleResetZoom}
+            onUndo={handleUndo}
+            onRedo={handleRedo}
+          />
         </DiagramContainer>
       </Box>
     </>
