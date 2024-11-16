@@ -102,14 +102,17 @@ export const useMermaidInteraction = ({ code, updateCode }: UseMermaidInteractio
     input.type = 'text';
     input.value = textElement.textContent || '';
     input.style.position = 'absolute';
-    input.style.top = `${boundingBox.top + window.scrollY}px`;
-    input.style.left = `${boundingBox.left + window.scrollX}px`;
-    input.style.width = `${boundingBox.width}px`;
-    input.style.height = `${boundingBox.height}px`;
+    input.style.top = `${boundingBox.top + window.scrollY - 2.5}px`;
+    input.style.left = `${boundingBox.left + window.scrollX - 10}px`;
+    input.style.width = `${boundingBox.width + 20}px`;
+    input.style.height = `${boundingBox.height + 5}px`;
     input.style.fontSize = window.getComputedStyle(textElement).fontSize;
     input.style.border = '1px solid #ccc';
     input.style.background = 'white';
     input.style.zIndex = '1000';
+
+    const originalFontSize = parseFloat(window.getComputedStyle(textElement).fontSize);
+    input.style.fontSize = `${originalFontSize * 0.85}px`;
   
     document.body.appendChild(input);
     input.focus();

@@ -9,13 +9,19 @@ import {
   Box,
   FormControl,
   InputLabel,
+  ListItemIcon,
   Stack,
   Popper,
   ClickAwayListener,
   SelectChangeEvent
 } from '@mui/material';
 import {
-  Close as CloseIcon
+  RectangleOutlined as RectangleIcon,
+  Crop75Outlined as RoundIcon,
+  DiamondOutlined as DiamondIcon,
+  NoteOutlined as NoteIcon,
+  CircleOutlined as ActionIcon,
+  LoopOutlined as LoopIcon,
 } from '@mui/icons-material';
 import { MermaidElement, ElementType } from '../types';
 
@@ -55,8 +61,11 @@ export const MermaidElementEditor = ({ element, anchorEl, onClose, onUpdate, zoo
   const handleSelectChange = (e: SelectChangeEvent<string>, field: keyof MermaidElement) => {
     e.preventDefault();
     e.stopPropagation();
+  
+    // Update the shape and close the popover
     onUpdate({ [field]: e.target.value as ElementType });
     handleSelectClose();
+    onClose(); // Close the popover after shape selection
   };
 
   return (
@@ -64,10 +73,10 @@ export const MermaidElementEditor = ({ element, anchorEl, onClose, onUpdate, zoo
       id={id}
       open={open}
       anchorEl={anchorEl}
-      placement="right-start"
+      placement="top"
       style={{
         transform: `scale(${1 / zoom})`,
-        transformOrigin: 'top left'
+        transformOrigin: 'top'
       }}
       sx={{
         zIndex: 1400
@@ -75,56 +84,107 @@ export const MermaidElementEditor = ({ element, anchorEl, onClose, onUpdate, zoo
     >
       <ClickAwayListener onClickAway={handleClickAway} mouseEvent="onMouseDown">
         <Paper 
-          elevation={3}
+          elevation={0}
           sx={{ 
-            p: 2,
-            width: 300,
-            borderRadius: 1
+            p: 0,
+            width: 160,
+            borderRadius: 1,
+            marginBottom: 1
           }}
           onClick={(e: React.MouseEvent) => e.stopPropagation()}
         >
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-            <Typography variant="subtitle1">Edit Element</Typography>
-            <IconButton 
-              size="small" 
-              onClick={(e: React.MouseEvent) => {
-                e.stopPropagation();
-                onClose();
+
+        <Stack spacing={2}>
+          <FormControl fullWidth size="small">
+            <InputLabel id="element-type-label"></InputLabel>
+            <Select
+              labelId="element-type-label"
+              value={element.type}
+              label=""
+              onChange={(e) => handleSelectChange(e, 'type')}
+              onOpen={handleSelectOpen}
+              onClose={handleSelectClose}
+              sx={{
+                display: 'flex',
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+              MenuProps={{
+                onClick: (e: React.MouseEvent) => e.stopPropagation(),
+                PaperProps: {
+                  onClick: (e: React.MouseEvent) => e.stopPropagation()
+                },
+                sx: {
+                  zIndex: 1500
+                }
+              }}
+              renderValue={(selected) => {
+                const selectedIcon = {
+                  default: <RectangleIcon fontSize="small" />,
+                  participant: <RoundIcon fontSize="small" />,
+                  decision: <DiamondIcon fontSize="small" />,
+                  note: <NoteIcon fontSize="small" />,
+                  action: <ActionIcon fontSize="small" />,
+                  loop: <LoopIcon fontSize="small" />
+                }[selected as ElementType];
+
+                const selectedLabel = {
+                  default: 'Rectangle',
+                  participant: 'Round',
+                  decision: 'Diamond',
+                  note: 'Note',
+                  action: 'Action',
+                  loop: 'Loop'
+                }[selected as ElementType];
+
+                return (
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    {selectedIcon}
+                    {selectedLabel}
+                  </Box>
+                );
               }}
             >
-              <CloseIcon fontSize="small" />
-            </IconButton>
-          </Box>
-
-          <Stack spacing={2}>
-            <FormControl fullWidth size="small">
-              <InputLabel id="element-type-label">Type</InputLabel>
-              <Select
-                labelId="element-type-label"
-                value={element.type}
-                label="Type"
-                onChange={(e) => handleSelectChange(e, 'type')}
-                onOpen={handleSelectOpen}
-                onClose={handleSelectClose}
-                MenuProps={{
-                  onClick: (e: React.MouseEvent) => e.stopPropagation(),
-                  PaperProps: {
-                    onClick: (e: React.MouseEvent) => e.stopPropagation()
-                  },
-                  sx: {
-                    zIndex: 1500
-                  }
-                }}
-              >
-                <MenuItem value="default">Rectangle [text]</MenuItem>
-                <MenuItem value="participant">Round (text)</MenuItem>
-                <MenuItem value="decision">Diamond {'{text}'}</MenuItem>
-                <MenuItem value="note">Note {'>'}text]</MenuItem>
-                <MenuItem value="action">Action ((text))</MenuItem>
-                <MenuItem value="loop">Loop [[text]]</MenuItem>
-              </Select>
-            </FormControl>
-          </Stack>
+              <MenuItem value="default">
+                <ListItemIcon>
+                  <RectangleIcon fontSize="small" />
+                </ListItemIcon>
+                Rectangle
+              </MenuItem>
+              <MenuItem value="participant">
+                <ListItemIcon>
+                  <RoundIcon fontSize="small" />
+                </ListItemIcon>
+                Round
+              </MenuItem>
+              <MenuItem value="decision">
+                <ListItemIcon>
+                  <DiamondIcon fontSize="small" />
+                </ListItemIcon>
+                Diamond
+              </MenuItem>
+              <MenuItem value="note">
+                <ListItemIcon>
+                  <NoteIcon fontSize="small" />
+                </ListItemIcon>
+                Note
+              </MenuItem>
+              <MenuItem value="action">
+                <ListItemIcon>
+                  <ActionIcon fontSize="small" />
+                </ListItemIcon>
+                Action
+              </MenuItem>
+              <MenuItem value="loop">
+                <ListItemIcon>
+                  <LoopIcon fontSize="small" />
+                </ListItemIcon>
+                Loop
+              </MenuItem>
+            </Select>
+          </FormControl>
+        </Stack>
 
         </Paper>
       </ClickAwayListener>
