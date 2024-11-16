@@ -4,7 +4,7 @@ import mermaid from 'mermaid';
 export const useDiagramRenderer = (code: string, zoom: number, theme: string) => {
   const [error, setError] = useState('');
 
-  useEffect(() => {
+  const initializeMermaid = () => {
     mermaid.initialize({
       startOnLoad: true,
       theme: theme === 'dark' ? 'dark' : 'default',
@@ -15,23 +15,14 @@ export const useDiagramRenderer = (code: string, zoom: number, theme: string) =>
         curve: 'basis',
       },
     });
-
-    // wait for element to exist before first render
-    const waitForElement = setInterval(() => {
-      const element = document.getElementById('mermaid-preview');
-      if (element) {
-        clearInterval(waitForElement);
-        renderDiagram();
-      }
-    }, 100);
-
-    return () => clearInterval(waitForElement);
-  }, []);
+  };
 
   const renderDiagram = async () => {
     try {
       const element = document.getElementById('mermaid-preview');
       if (!element) return;
+      
+      initializeMermaid();
       
       element.innerHTML = '';
       const { svg } = await mermaid.render('mermaid-diagram', code);
@@ -49,6 +40,20 @@ export const useDiagramRenderer = (code: string, zoom: number, theme: string) =>
       setError(err.message);
     }
   };
+
+  useEffect(() => {
+    initializeMermaid();
+    
+    const waitForElement = setInterval(() => {
+      const element = document.getElementById('mermaid-preview');
+      if (element) {
+        clearInterval(waitForElement);
+        renderDiagram();
+      }
+    }, 100);
+
+    return () => clearInterval(waitForElement);
+  }, []);
 
   useEffect(() => {
     renderDiagram();
