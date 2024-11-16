@@ -44,6 +44,7 @@ const MermaidEditor = () => {
     selectedElement,
     anchorEl,
     handleDiagramClick,
+    handleDoubleClick,
     handleElementUpdate,
     handleClose
   } = useMermaidInteraction({ code, updateCode });
@@ -121,6 +122,7 @@ const MermaidEditor = () => {
           onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseUp}
           onClick={handleDiagramClick}
+          onDoubleClick={handleDoubleClick}
           onWheel={handleWheel}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}

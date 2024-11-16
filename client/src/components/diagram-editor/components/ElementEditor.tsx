@@ -124,17 +124,8 @@ export const MermaidElementEditor = ({ element, anchorEl, onClose, onUpdate, zoo
                 <MenuItem value="loop">Loop [[text]]</MenuItem>
               </Select>
             </FormControl>
-
-            <FormControl fullWidth size="small">
-              <TextField
-                label="Text"
-                value={element.text}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => onUpdate({ text: e.target.value })}
-                onClick={(e: React.MouseEvent) => e.stopPropagation()}
-                size="small"
-              />
-            </FormControl>
           </Stack>
+
         </Paper>
       </ClickAwayListener>
     </Popper>
