@@ -59,7 +59,7 @@ const DiagramContainer = styled(Box)(({ theme }) => ({
   '&:active': {
     cursor: 'grabbing',
   },
-  backgroundColor: theme.palette.mode === 'light' ? theme.palette.grey[50] : theme.palette.grey[900],
+  backgroundColor: theme.palette.mode === 'light' ? theme.palette.grey[50] : '#161616',
 }));
 
 const TransformableArea = styled(Box)({

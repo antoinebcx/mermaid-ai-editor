@@ -275,7 +275,7 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSend, isLoading = false, curren
               sx={{
                 backgroundColor: theme.palette.mode === 'light' 
                   ? 'rgba(235, 235, 235, 0.9)'
-                  : 'rgba(50, 50, 50, 0.9)',
+                  : 'rgba(40, 40, 40, 0.9)',
               }}
             />
           ))}
@@ -293,7 +293,7 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSend, isLoading = false, curren
             borderRadius: '24px',
             backgroundColor: theme.palette.mode === 'light' 
               ? 'rgba(235, 235, 235, 0.9)'
-              : 'rgba(50, 50, 50, 0.9)',
+              : 'rgba(40, 40, 40, 0.9)',
             backdropFilter: 'blur(2px)',
             // boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
             border: isDragActive ? `2px solid ${theme.palette.primary.main}` : 'none',
