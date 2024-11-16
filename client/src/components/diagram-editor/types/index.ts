@@ -57,8 +57,6 @@ export type ElementType = 'default' | 'participant' | 'decision' | 'note' | 'act
 
 export interface MermaidElement {
   id: string;
-  type: ElementType;
   text: string;
-  color?: string;
-  shape?: string;
+  type: ElementType;
 }
