@@ -14,8 +14,8 @@ const getThemeOptions = (mode: 'light' | 'dark'): ThemeOptions => ({
       dark: '#7b1fa2',
     },
     background: {
-      default: mode === 'light' ? '#f5f5f5' : '#121212',
-      paper: mode === 'light' ? '#ffffff' : '#1e1e1e',
+      default: mode === 'light' ? '#f5f5f5' : '#141414',
+      paper: mode === 'light' ? '#ffffff' : '#141414',
     },
   },
   typography: {

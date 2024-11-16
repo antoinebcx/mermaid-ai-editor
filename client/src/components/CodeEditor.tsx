@@ -24,7 +24,6 @@ const CopyButton = styled(IconButton)(({ theme }) => ({
   top: '1rem',
   right: '1rem',
   zIndex: 20,
-  padding: '4px',
   backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0)' : 'rgba(0, 0, 0, 0)',
   '&:hover': {
     backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
@@ -73,7 +72,7 @@ const SyntaxHighlight = styled(Box)(({ theme }) => ({
   pointerEvents: 'none',
   overflow: 'auto',
   whiteSpace: 'pre',
-  backgroundColor: theme.palette.mode === 'light' ? '#ffffff' : '#1e1e1e',
+  backgroundColor: theme.palette.mode === 'light' ? '#ffffff' : '#141414',
   color: theme.palette.mode === 'dark' 
     ? '#eda234'
     : '#FFA726',
@@ -168,7 +167,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
   return (
     <EditorContainer className={className}>
       <Tooltip title={copied ? "Copied!" : "Copy code"}>
-        <CopyButton onClick={handleCopy} size="small">
+        <CopyButton onClick={handleCopy} size="medium">
           <ContentCopyIcon fontSize="small" />
         </CopyButton>
       </Tooltip>
