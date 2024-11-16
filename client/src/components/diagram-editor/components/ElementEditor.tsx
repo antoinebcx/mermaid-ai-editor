@@ -62,10 +62,9 @@ export const MermaidElementEditor = ({ element, anchorEl, onClose, onUpdate, zoo
     e.preventDefault();
     e.stopPropagation();
   
-    // Update the shape and close the popover
     onUpdate({ [field]: e.target.value as ElementType });
     handleSelectClose();
-    onClose(); // Close the popover after shape selection
+    onClose();
   };
 
   return (

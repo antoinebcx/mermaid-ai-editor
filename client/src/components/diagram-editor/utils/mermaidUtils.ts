@@ -1,6 +1,5 @@
 import { ElementType, MermaidElement } from '../types';
 
-// Define the shape type
 type NodeShape = {
   start: string;
   end: string;
@@ -8,7 +7,6 @@ type NodeShape = {
   atomicMarkers?: boolean;
 };
 
-// Precise Mermaid node shape definitions
 const NODE_SHAPES: Record<ElementType, NodeShape> = {
   default: {
     start: '[',
@@ -51,7 +49,6 @@ function findNodeInLine(line: string, nodeId: string): { text: string; type: Ele
   const startPos = nodeStart + nodeId.length;
   const restOfLine = line.slice(startPos);
   
-  // Try atomic markers first
   for (const shape of Object.values(NODE_SHAPES)) {
     if (!shape.atomicMarkers) continue;
     
@@ -68,7 +65,6 @@ function findNodeInLine(line: string, nodeId: string): { text: string; type: Ele
     }
   }
 
-  // Then try single-character markers
   for (const shape of Object.values(NODE_SHAPES)) {
     if (shape.atomicMarkers) continue;
     

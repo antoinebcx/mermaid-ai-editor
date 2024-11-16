@@ -12,26 +12,21 @@ export const useMermaidInteraction = ({ code, updateCode }: UseMermaidInteractio
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const updateTimeoutRef = useRef<number>();
 
-  // Update anchor element after code changes
   useEffect(() => {
     if (selectedElement) {
-      // Clear any existing timeout
       if (updateTimeoutRef.current) {
         window.clearTimeout(updateTimeoutRef.current);
       }
 
-      // Set a small timeout to ensure the diagram has re-rendered
       updateTimeoutRef.current = window.setTimeout(() => {
-        // Try to find the node in the new diagram
         const selector = `#mermaid-preview g[id*="${selectedElement.id}-"]`;
         const newNodeGroup = document.querySelector(selector);
         if (newNodeGroup) {
           setAnchorEl(newNodeGroup as HTMLElement);
         }
-      }, 100); // Small delay to ensure rendering is complete
+      }, 100);
     }
 
-    // Cleanup
     return () => {
       if (updateTimeoutRef.current) {
         window.clearTimeout(updateTimeoutRef.current);
@@ -47,7 +42,6 @@ export const useMermaidInteraction = ({ code, updateCode }: UseMermaidInteractio
       const nodeGroup = target.closest('g.node');
       if (!nodeGroup) return;
 
-      // Get the node ID from the group ID
       const nodeMatch = nodeGroup.id.match(/flowchart-([^-]+)/);
       const nodeId = nodeMatch?.[1];
       if (!nodeId) return;
@@ -68,7 +62,6 @@ export const useMermaidInteraction = ({ code, updateCode }: UseMermaidInteractio
   const handleDoubleClick = (e: React.MouseEvent<HTMLElement>) => {
     const target = e.target as HTMLElement;
   
-    // Locate the parent node group
     const nodeGroup = target.closest('g.node');
     if (!nodeGroup) {
       console.log('No node group found');
@@ -82,7 +75,6 @@ export const useMermaidInteraction = ({ code, updateCode }: UseMermaidInteractio
       return;
     }
   
-    // Locate the text inside the foreignObject
     const foreignObject = nodeGroup.querySelector('foreignObject');
     if (!foreignObject) {
       console.log('No foreignObject found for this node');
@@ -97,7 +89,6 @@ export const useMermaidInteraction = ({ code, updateCode }: UseMermaidInteractio
   
     const boundingBox = textElement.getBoundingClientRect();
   
-    // Create and position input element
     const input = document.createElement('input');
     input.type = 'text';
     input.value = textElement.textContent || '';
@@ -117,19 +108,18 @@ export const useMermaidInteraction = ({ code, updateCode }: UseMermaidInteractio
     document.body.appendChild(input);
     input.focus();
   
-    // Handle text updates
     input.onblur = () => {
       const newText = input.value.trim();
       document.body.removeChild(input);
   
       if (newText !== textElement.textContent) {
-        updateCode(updateNodeText(code, nodeId, newText)); // Update the code and re-render
+        updateCode(updateNodeText(code, nodeId, newText));
       }
     };
   
     input.onkeydown = (keyEvent) => {
       if (keyEvent.key === 'Enter') {
-        input.blur(); // Save changes on Enter
+        input.blur();
       }
     };
   };   
