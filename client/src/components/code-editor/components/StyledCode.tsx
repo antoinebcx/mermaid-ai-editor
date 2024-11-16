@@ -14,11 +14,6 @@ export const CopyButton = styled(IconButton)(({ theme }) => ({
   top: '1rem',
   right: '1rem',
   zIndex: 20,
-  backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0)' : 'rgba(0, 0, 0, 0)',
-  '&:hover': {
-    backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
-  },
-  opacity: 0.6
 }));
 
 export const EditorTextarea = styled('textarea')(({ theme }) => ({
