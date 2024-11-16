@@ -51,3 +51,12 @@ export interface DiagramInteractionProps {
     lastPosition: Position;
     touchDistance: number | null;
 }
+
+// Diagram elements
+export type ElementType = 'default' | 'participant' | 'decision' | 'note' | 'action' | 'loop';
+
+export interface MermaidElement {
+  id: string;
+  text: string;
+  type: ElementType;
+}

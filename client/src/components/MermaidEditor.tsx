@@ -7,9 +7,11 @@ import { useZoomPan } from './diagram-editor/hooks/useZoomPan';
 import { useDiagramRenderer } from './diagram-editor/hooks/useDiagramRenderer';
 import { useChat } from './diagram-editor/hooks/useChat';
 import { useDiagramInteraction } from './diagram-editor/hooks/useDiagramInteraction';
+import { useMermaidInteraction } from './diagram-editor/hooks/useMermaidInteraction';
 import { NAVBAR_HEIGHT } from './diagram-editor/constants';
 import CodeEditor from './code-editor/CodeEditor';
 import ChatInput from './chat-input/ChatInput';
+import { MermaidElementEditor } from './diagram-editor/components/ElementEditor';
 
 const MermaidEditor = () => {
   const theme = useTheme();
@@ -37,6 +39,15 @@ const MermaidEditor = () => {
     isChatLoading,
     handleChatMessage,
   } = useChat(code, updateCode);
+
+  const {
+    selectedElement,
+    anchorEl,
+    handleDiagramClick,
+    handleDoubleClick,
+    handleElementUpdate,
+    handleClose
+  } = useMermaidInteraction({ code, updateCode });
 
   const {
     handleMouseDown,
@@ -110,6 +121,8 @@ const MermaidEditor = () => {
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseUp}
+          onClick={handleDiagramClick}
+          onDoubleClick={handleDoubleClick}
           onWheel={handleWheel}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
@@ -125,10 +138,23 @@ const MermaidEditor = () => {
           >
             <Box
               id="mermaid-preview"
+              onClick={(e) => {
+                console.log('Preview box clicked');
+                handleDiagramClick(e);
+              }}
               sx={{
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
+                '& svg': {
+                  cursor: 'pointer',
+                  '& g[id^="flowchart-"]': {
+                    cursor: 'pointer',
+                    '&:hover': {
+                      opacity: 0.8,
+                    },
+                  },
+                },
               }}
             />
           </TransformableArea>
@@ -143,6 +169,16 @@ const MermaidEditor = () => {
             onUndo={handleUndo}
             onRedo={handleRedo}
           />
+
+          {selectedElement && (
+            <MermaidElementEditor
+              element={selectedElement}
+              anchorEl={anchorEl}
+              onClose={handleClose}
+              onUpdate={handleElementUpdate}
+              zoom={zoom}
+            />
+          )}
         </DiagramContainer>
       </Box>
     </>
