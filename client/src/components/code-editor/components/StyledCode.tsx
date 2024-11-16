@@ -60,7 +60,7 @@ export const SyntaxHighlight = styled(Box)(({ theme }) => ({
   backgroundColor: theme.palette.mode === 'light' ? '#ffffff' : '#141414',
   color: theme.palette.mode === 'dark' 
     ? '#eda234'
-    : '#FFA726',
+    : '#ff9800',
 }));
 
 export const LineNumbers = styled(Box)(({ theme }) => ({

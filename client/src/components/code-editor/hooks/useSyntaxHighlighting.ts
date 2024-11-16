@@ -5,9 +5,9 @@ export const useSyntaxHighlighting = () => {
   const theme = useTheme();
 
   const getColors = (): SyntaxColors => ({
-    keyword: theme.palette.mode === 'dark' ? '#B39DDB' : '#9575CD',
-    node: theme.palette.mode === 'dark' ? '#4fa1e3' : '#64B5F6',
-    operator: theme.palette.mode === 'dark' ? '#7DD180' : '#81C784',
+    keyword: theme.palette.mode === 'dark' ? '#B39DDB' : '#8b62d1',
+    node: theme.palette.mode === 'dark' ? '#4fa1e3' : '#49a8f5',
+    operator: theme.palette.mode === 'dark' ? '#7DD180' : '#40d648',
     hexColor: (match: string) => match,
   });
 
