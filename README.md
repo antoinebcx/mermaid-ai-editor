@@ -2,7 +2,18 @@
 
 Create and edit Mermaid flow charts with AI (Claude).
 
-You can upload text, code files, PDF and Word documents.
+Upload text, code files, PDF and Word documents.
+
+```mermaid
+flowchart LR
+    Input[/Text • Code • PDF • Doc/]
+    Input --> Claude{Claude}
+    Claude --> Create[Create Chart]
+    Claude --> Edit[Edit Chart]
+    Code[IDE] --> Create
+    Code --> Edit
+    Create & Edit --> Result(Flow chart)
+```
 
 ---
 
@@ -18,4 +29,4 @@ Add your `ANTHROPIC_API_KEY` to the `.env` file in the server directory and you'
 
 _
 
-<img width="1321" alt="image" src="https://github.com/user-attachments/assets/e4e7ea98-4179-4844-856e-c5b31423e500">
+<img width="1321" alt="image" src="https://github.com/user-attachments/assets/5c709e1a-4a3e-426a-bacc-7bd5066e3e63">
