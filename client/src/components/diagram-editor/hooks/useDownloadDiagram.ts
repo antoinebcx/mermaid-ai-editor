@@ -1,5 +1,6 @@
 // useDownloadDiagram.ts
 import { useState } from 'react';
+import { useTheme } from '@mui/material';
 
 interface DownloadOptions {
   includeBackground: boolean;
@@ -7,6 +8,7 @@ interface DownloadOptions {
 }
 
 export const useDownloadDiagram = () => {
+  const theme = useTheme();
   const [isDownloadMenuOpen, setIsDownloadMenuOpen] = useState(false);
   const [downloadAnchorEl, setDownloadAnchorEl] = useState<HTMLElement | null>(null);
 
@@ -64,9 +66,9 @@ export const useDownloadDiagram = () => {
       // Scale the context for higher resolution
       ctx.scale(scale, scale);
 
-      // If background is needed, fill it first
+      // If background is needed, fill it with theme-appropriate color
       if (includeBackground) {
-        ctx.fillStyle = '#ffffff';
+        ctx.fillStyle = theme.palette.mode === 'light' ? theme.palette.grey[50] : '#161616';
         ctx.fillRect(0, 0, width, height);
       }
 
