@@ -9,11 +9,14 @@ export const EditorContainer = styled(Box)(({ theme }) => ({
   fontFamily: 'monospace',
 }));
 
-export const CopyButton = styled(IconButton)(({ theme }) => ({
+export const ButtonsContainer = styled(Box)(({ theme }) => ({
   position: 'absolute',
   top: '1rem',
   right: '1rem',
   zIndex: 20,
+}));
+
+export const CopyButton = styled(IconButton)(({ theme }) => ({
 }));
 
 export const EditorTextarea = styled('textarea')(({ theme }) => ({

@@ -7,12 +7,14 @@ import { useSyntaxHighlighting } from './hooks/useSyntaxHighlighting';
 import { useClipboard } from './hooks/useClipboard';
 import {
   EditorContainer,
+  ButtonsContainer,
   CopyButton,
   EditorTextarea,
   SyntaxHighlight,
   LineNumbers,
   InteractiveLineNumbers
 } from './components/StyledCode';
+import DiagramTypeSelector from './components/DiagramTypeSelector';
 import { CodeEditorProps } from './types';
 
 const CodeEditor: React.FC<CodeEditorProps> = ({
@@ -49,11 +51,14 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
 
   return (
     <EditorContainer className={className}>
+      <ButtonsContainer>
       <Tooltip title={copied ? "Copied!" : "Copy code"}>
         <CopyButton onClick={() => handleCopy(value)} size="medium">
           <ContentCopyIcon fontSize="small" />
         </CopyButton>
       </Tooltip>
+      <DiagramTypeSelector value={value} onChange={onChange} />
+      </ButtonsContainer>
       <EditorTextarea
         ref={textareaRef}
         value={value}
