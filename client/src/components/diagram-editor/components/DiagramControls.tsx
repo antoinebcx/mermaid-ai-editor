@@ -70,7 +70,7 @@ export const DiagramControls = ({
           </IconButton>
         </span>
       </Tooltip>
-      <Tooltip title="Download Diagram">
+      <Tooltip title="Download">
         <IconButton onClick={downloadProps.onDownloadClick} size="small">
           <DownloadOutlined />
         </IconButton>

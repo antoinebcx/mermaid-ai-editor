@@ -60,7 +60,7 @@ const DiagramTypeSelector: React.FC<DiagramTypeSelectorProps> = ({ value, onChan
 
   return (
     <>
-      <Tooltip title="Chart direction">
+      <Tooltip title="Direction">
         <IconButton
           size="small"
           onClick={handleClick}
