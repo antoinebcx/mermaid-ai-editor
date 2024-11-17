@@ -1,17 +1,20 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, forwardRef, useImperativeHandle } from 'react';
 import { Box, Alert, useTheme } from '@mui/material';
 import { useDropzone } from 'react-dropzone';
 import { FileChips } from './components/FileChips';
-import { InputField } from './components/InputField';
+import { LineChips } from './components/LineChips';
+import { InputField, InputFieldRef } from './components/InputField';
 import { useFileProcessing } from './hooks/useFileProcessing';
 import { usePdfLoader } from './hooks/usePdfLoader';
-import { ChatInputProps } from './types';
+import { ChatInputProps, ChatInputRef, TargetedLine } from './types';
 import { ACCEPTED_FILES } from './constants';
 
-const ChatInput: React.FC<ChatInputProps> = ({ onSend, isLoading = false }) => {
+const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(({ onSend, isLoading = false }, ref) => {
   const theme = useTheme();
   const [input, setInput] = useState('');
+  const [targetedLines, setTargetedLines] = useState<TargetedLine[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const inputFieldRef = useRef<InputFieldRef>(null);
   
   const {
     uploadedFiles,
@@ -24,30 +27,53 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSend, isLoading = false }) => {
   usePdfLoader();
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop: handleFiles,
+    onDrop: (files) => {
+      handleFiles(files);
+      inputFieldRef.current?.focus();
+    },
     noClick: true,
     accept: ACCEPTED_FILES
   });
 
+  const handleLineTarget = (lineNumber: number, lineContent: string) => {
+    if (!targetedLines.some(line => line.number === lineNumber)) {
+      setTargetedLines(prev => [...prev, { number: lineNumber, content: lineContent }]);
+      inputFieldRef.current?.focus();
+    }
+  };
+
+  useImperativeHandle(ref, () => ({
+    handleLineTarget
+  }));
+
+  const removeTargetedLine = (lineNumber: number) => {
+    setTargetedLines(prev => prev.filter(line => line.number !== lineNumber));
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if ((input.trim() || uploadedFiles.length > 0) && !isLoading && !isExtracting) {
+    if ((input.trim() || uploadedFiles.length > 0 || targetedLines.length > 0) && !isLoading && !isExtracting) {
       const formattedFiles = uploadedFiles.map((file, index) => {
         const fileInfo = `File: ${file.file.name} (${file.type.toUpperCase()}${file.language ? ` - ${file.language}` : ''})`;
         let formattedContent = file.content;
-        
         if (file.type === 'code') {
           formattedContent = '```' + (file.language || '') + '\n' + formattedContent + '\n```';
         }
-        
         return `<START DOCUMENT ${index + 1}>\n${fileInfo}\n\n${formattedContent}\n<END DOCUMENT ${index + 1}>`;
       }).join('\n\n');
-  
-      const fullMessage = [formattedFiles, input.trim()].filter(Boolean).join('\n\n');
-      
+
+      const formattedLines = targetedLines.map(line => 
+        `<TARGETED LINE ${line.number}>\n${line.content}\n</TARGETED LINE ${line.number}>`
+      ).join('\n\n');
+
+      const fullMessage = [formattedFiles, formattedLines, input.trim()]
+        .filter(Boolean)
+        .join('\n\n');
+
       onSend(fullMessage);
       setInput('');
       clearFiles();
+      setTargetedLines([]);
     }
   };
 
@@ -58,18 +84,23 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSend, isLoading = false }) => {
     }
   };
 
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      handleFiles(Array.from(e.target.files));
+      inputFieldRef.current?.focus();
+    }
+  };
+
   return (
-    <Box
-      sx={{
-        position: 'absolute',
-        bottom: '20px',
-        width: '90%',
-        maxWidth: '90%',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        zIndex: 1000,
-      }}
-    >
+    <Box sx={{
+      position: 'absolute',
+      bottom: '20px',
+      width: '90%',
+      maxWidth: '90%',
+      left: '50%',
+      transform: 'translateX(-50%)',
+      zIndex: 1000,
+    }}>
       {isExtracting && (
         <Alert 
           severity="info" 
@@ -84,15 +115,20 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSend, isLoading = false }) => {
           Extracting text from files...
         </Alert>
       )}
-
       <div {...getRootProps()}>
-        <FileChips 
-          files={uploadedFiles} 
+        <LineChips 
+          lines={targetedLines}
+          onRemove={removeTargetedLine}
+        />
+        
+        <FileChips
+          files={uploadedFiles}
           onRemove={removeFile}
           isExtracting={isExtracting}
         />
         
-        <InputField 
+        <InputField
+          ref={inputFieldRef}
           value={input}
           onChange={setInput}
           onSubmit={handleSubmit}
@@ -102,19 +138,18 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSend, isLoading = false }) => {
           isDragActive={isDragActive}
           disabled={isLoading || isExtracting}
         />
-
         <input {...getInputProps()} />
         <input
           type="file"
           ref={fileInputRef}
           style={{ display: 'none' }}
-          onChange={(e) => e.target.files && handleFiles(Array.from(e.target.files))}
+          onChange={handleFileInputChange}
           accept={Object.values(ACCEPTED_FILES).flat().join(',')}
           multiple
         />
       </div>
     </Box>
   );
-};
+});
 
 export default ChatInput;

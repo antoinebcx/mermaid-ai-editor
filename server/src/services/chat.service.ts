@@ -30,18 +30,30 @@ export class ChatService {
     });
   }
 
+  private hasTargetedLine(message: string): boolean {
+    return message.includes('<TARGETED LINE');
+  }
+
   async streamResponse(
-    messages: Array<{ role: 'user' | 'assistant'; content: string }>, 
+    messages: Array<{ role: 'user' | 'assistant'; content: string }>,
     res: Response
   ): Promise<void> {
     try {
-      const additionalInstructions = `
+      const lastMessage = messages[messages.length - 1];
+      const isTargetedLine = lastMessage.role === 'user' && this.hasTargetedLine(lastMessage.content);
+
+      let additionalInstructions = `
         Build/adapt the most relevant and elegant Mermaid diagram for this request.
         Answer best the request, in code.
         Focus on the diagram structure and relevance of the components.
-        Don’t add colors/style if not asked to.
+        Don't add colors/style if not asked to.
         Return only the Mermaid code for the diagram, nothing else.
       `.trim();
+
+      if (isTargetedLine) {
+        additionalInstructions += `\n\nThe user wants to target a line in particular (<TARGETED LINE>). 
+        Rewrite the diagram code and just satisfy the user request around the targeted line.`;
+      }
 
       const updatedMessages = this.appendInstructionsToLastUserMessage(
         messages,
@@ -55,10 +67,9 @@ export class ChatService {
       });
 
       let accumulatedText = '';
-
       const stream = await this.anthropic.messages.stream({
         messages: updatedMessages,
-        model: 'claude-3-5-sonnet-20241022',
+        model: isTargetedLine ? 'claude-3-5-haiku-20241022' : 'claude-3-5-sonnet-20241022',
         max_tokens: 1024,
         system: this.systemPrompt,
       });

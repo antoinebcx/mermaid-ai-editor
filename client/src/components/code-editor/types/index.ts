@@ -5,6 +5,7 @@ export interface CodeEditorProps {
   onChange: (e: ChangeEvent<HTMLTextAreaElement>) => void;
   placeholder?: string;
   className?: string;
+  onLineSelect?: (lineNumber: number, lineContent: string) => void;
 }
 
 export interface SyntaxColors {

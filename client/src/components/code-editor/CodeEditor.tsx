@@ -1,15 +1,17 @@
 import React, { useRef, UIEvent, useMemo } from 'react';
-import { useTheme } from '@mui/material/styles';
+import { useTheme, styled } from '@mui/material/styles';
 import Tooltip from '@mui/material/Tooltip';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import AddIcon from '@mui/icons-material/Add';
 import { useSyntaxHighlighting } from './hooks/useSyntaxHighlighting';
 import { useClipboard } from './hooks/useClipboard';
-import { 
-  EditorContainer, 
-  CopyButton, 
-  EditorTextarea, 
-  SyntaxHighlight, 
+import {
+  EditorContainer,
+  CopyButton,
+  EditorTextarea,
+  SyntaxHighlight,
   LineNumbers,
+  InteractiveLineNumbers
 } from './components/StyledCode';
 import { CodeEditorProps } from './types';
 
@@ -18,6 +20,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
   onChange,
   placeholder,
   className = '',
+  onLineSelect,
 }) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const highlightRef = useRef<HTMLDivElement>(null);
@@ -37,10 +40,11 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
     }
   };
 
-  const lineNumbers = useMemo(() => {
-    return Array.from({ length: value.split('\n').length }, (_, i) => i + 1);
-  }, [value]);
-
+  const lines = useMemo(() => value.split('\n'), [value]);
+  const lineNumbers = useMemo(() =>
+    Array.from({ length: lines.length }, (_, i) => i + 1),
+    [lines.length]
+  );
   const highlightedLines = useMemo(() => highlightSyntax(value), [value]);
 
   return (
@@ -50,7 +54,6 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
           <ContentCopyIcon fontSize="small" />
         </CopyButton>
       </Tooltip>
-
       <EditorTextarea
         ref={textareaRef}
         value={value}
@@ -59,16 +62,20 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
         placeholder={placeholder}
         spellCheck={false}
       />
-      
+      <InteractiveLineNumbers>
+        {lineNumbers.map((num) => (
+          <Tooltip key={num} title="Target this line" placement="right">
+            <div onClick={() => onLineSelect?.(num, lines[num - 1])}>
+              <span>{num}</span>
+              <AddIcon className="add-icon" fontSize="small" />
+            </div>
+          </Tooltip>
+        ))}
+      </InteractiveLineNumbers>
       <SyntaxHighlight
         ref={highlightRef}
         onScroll={syncScroll}
       >
-        <LineNumbers>
-          {lineNumbers.map((num) => (
-            <div key={num}>{num}</div>
-          ))}
-        </LineNumbers>
         {highlightedLines.map((line, i) => (
           <div
             key={i}

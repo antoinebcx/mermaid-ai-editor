@@ -3,6 +3,10 @@ export interface ChatInputProps {
     isLoading?: boolean;
     currentDiagram?: string;
 }
+
+export interface ChatInputRef {
+    handleLineTarget: (lineNumber: number, lineContent: string) => void;
+}
   
 export interface UploadedFile {
     file: File;
@@ -21,4 +25,14 @@ export interface StyleProps {
     isDragActive?: boolean;
     isExtracting?: boolean;
     isLoading?: boolean;
+}
+
+export interface TargetedLine {
+    number: number;
+    content: string;
+}
+  
+export interface LineChipsProps {
+    lines: TargetedLine[];
+    onRemove: (lineNumber: number) => void;
 }
