@@ -18,7 +18,7 @@ import {
 import {
   RectangleOutlined as RectangleIcon,
   Crop75Outlined as RoundIcon,
-  SquareOutlined as SquareIcon,  // Changed from DiamondIcon
+  SquareOutlined as SquareIcon,
   NoteOutlined as NoteIcon,
   CircleOutlined as ActionIcon,
   LoopOutlined as LoopIcon,
