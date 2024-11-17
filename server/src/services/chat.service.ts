@@ -1,4 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk';
+import { Response } from 'express';
 import { config } from '../config';
 
 export class ChatService {
@@ -17,7 +18,7 @@ export class ChatService {
   private appendInstructionsToLastUserMessage(
     messages: Array<{ role: 'user' | 'assistant'; content: string }>,
     instructions: string
-  ): Array<{ role: 'user' | 'assistant'; content: string }> {
+  ) {
     return messages.map((message, index) => {
       if (message.role === 'user' && index === messages.length - 1) {
         return {
@@ -29,7 +30,10 @@ export class ChatService {
     });
   }
 
-  async generateResponse(messages: Array<{ role: 'user' | 'assistant'; content: string }>): Promise<string> {
+  async streamResponse(
+    messages: Array<{ role: 'user' | 'assistant'; content: string }>, 
+    res: Response
+  ): Promise<void> {
     try {
       const additionalInstructions = `
         Build/adapt the most relevant and elegant Mermaid flow chart for this request.
@@ -37,26 +41,47 @@ export class ChatService {
         Return only the Mermaid code for the flow chart, nothing else.
       `.trim();
 
-      const updatedMessages = this.appendInstructionsToLastUserMessage(messages, additionalInstructions);
+      const updatedMessages = this.appendInstructionsToLastUserMessage(
+        messages,
+        additionalInstructions
+      );
 
-      console.log(updatedMessages)
-
-      const response = await this.anthropic.messages.create({
-        model: 'claude-3-5-sonnet-20241022',
-        system: this.systemPrompt,
-        max_tokens: 1024,
-        messages: updatedMessages,
+      // Set up SSE headers
+      res.writeHead(200, {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
       });
 
-      const textBlock = response.content.find(block => block.type === 'text');
-      if (!textBlock || !('text' in textBlock)) {
-        throw new Error('No text content in response');
-      }
+      let accumulatedText = '';
 
-      return textBlock.text;
+      const stream = await this.anthropic.messages.stream({
+        messages: updatedMessages,
+        model: 'claude-3-5-sonnet-20241022',
+        max_tokens: 1024,
+        system: this.systemPrompt,
+      });
+
+      stream
+        .on('text', (text) => {
+          accumulatedText += text;
+          res.write(`data: ${JSON.stringify({ type: 'content', text })}\n\n`);
+        })
+        .on('error', (error) => {
+          console.error('Stream error:', error);
+          res.write(`data: ${JSON.stringify({ type: 'error', error: error.message })}\n\n`);
+          res.end();
+        })
+        .on('end', () => {
+          // Send the complete response
+          res.write(`data: ${JSON.stringify({ type: 'done', text: accumulatedText })}\n\n`);
+          res.end();
+        });
+
     } catch (error) {
-      console.error('Error generating response:', error);
-      throw new Error('Failed to generate response from Claude');
+      console.error('Error in stream response:', error);
+      res.write(`data: ${JSON.stringify({ type: 'error', error: 'Failed to generate response' })}\n\n`);
+      res.end();
     }
   }
 }
