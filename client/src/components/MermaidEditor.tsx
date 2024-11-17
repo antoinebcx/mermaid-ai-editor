@@ -11,10 +11,14 @@ import { useMermaidInteraction } from './diagram-editor/hooks/useMermaidInteract
 import { NAVBAR_HEIGHT } from './diagram-editor/constants';
 import CodeEditor from './code-editor/CodeEditor';
 import ChatInput from './chat-input/ChatInput';
+import { ChatInputRef } from './chat-input/types'
 import { MermaidElementEditor } from './diagram-editor/components/ElementEditor';
 
 const MermaidEditor = () => {
   const theme = useTheme();
+  const chatInputRef = useRef<ChatInputRef>(null);
+  const transformableRef = useRef<HTMLDivElement>(null);
+
   const {
     code,
     updateCode,
@@ -59,8 +63,6 @@ const MermaidEditor = () => {
     handleTouchEnd,
   } = useDiagramInteraction(zoomPan);
 
-  const transformableRef = useRef<HTMLDivElement>(null);
-
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
       if (e.metaKey || e.ctrlKey) {
@@ -81,6 +83,12 @@ const MermaidEditor = () => {
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [handleUndo, handleRedo]);
+
+  const handleLineSelect = (lineNumber: number, lineContent: string) => {
+    if (chatInputRef.current) {
+      chatInputRef.current.handleLineTarget(lineNumber, lineContent);
+    }
+  };
 
   return (
     <>
@@ -108,8 +116,10 @@ const MermaidEditor = () => {
             value={code}
             onChange={(e) => updateCode(e.target.value)}
             placeholder="Enter Mermaid diagram code here..."
+            onLineSelect={handleLineSelect}
           />
           <ChatInput 
+            ref={chatInputRef}
             onSend={handleChatMessage}
             isLoading={isChatLoading}
             currentDiagram={code}
