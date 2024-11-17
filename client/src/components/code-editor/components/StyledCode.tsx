@@ -58,7 +58,7 @@ export const SyntaxHighlight = styled(Box)(({ theme }) => ({
   overflow: 'auto',
   whiteSpace: 'pre',
   backgroundColor: theme.palette.mode === 'light' ? '#ffffff' : '#141414',
-  color: theme.palette.mode === 'dark' 
+  color: theme.palette.mode === 'dark'
     ? '#eda234'
     : '#ff9800',
 }));
@@ -75,5 +75,17 @@ export const LineNumbers = styled(Box)(({ theme }) => ({
   color: theme.palette.text.secondary,
   opacity: 0.5,
   userSelect: 'none',
-  pointerEvents: 'none',
+}));
+
+export const InteractiveLineNumbers = styled(LineNumbers)(({ theme }) => ({
+  zIndex: 11,
+  '& div': {
+    cursor: 'pointer',
+    '&:hover': {
+      opacity: 1,
+      backgroundColor: theme.palette.mode === 'dark'
+        ? 'rgba(255, 255, 255, 0.1)'
+        : 'rgba(0, 0, 0, 0.1)'
+    }
+  }
 }));
