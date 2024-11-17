@@ -18,7 +18,7 @@ import {
 import {
   RectangleOutlined as RectangleIcon,
   Crop75Outlined as RoundIcon,
-  DiamondOutlined as DiamondIcon,
+  SquareOutlined as SquareIcon,  // Changed from DiamondIcon
   NoteOutlined as NoteIcon,
   CircleOutlined as ActionIcon,
   LoopOutlined as LoopIcon,
@@ -67,6 +67,11 @@ export const MermaidElementEditor = ({ element, anchorEl, onClose, onUpdate, zoo
     onClose();
   };
 
+  const rotatedSquareStyle = {
+    transform: 'rotate(45deg)',
+    // display: 'inline-block'
+  };
+
   return (
     <Popper 
       id={id}
@@ -92,7 +97,6 @@ export const MermaidElementEditor = ({ element, anchorEl, onClose, onUpdate, zoo
           }}
           onClick={(e: React.MouseEvent) => e.stopPropagation()}
         >
-
         <Stack spacing={2}>
           <FormControl fullWidth size="small">
             <InputLabel id="element-type-label"></InputLabel>
@@ -122,7 +126,7 @@ export const MermaidElementEditor = ({ element, anchorEl, onClose, onUpdate, zoo
                 const selectedIcon = {
                   default: <RectangleIcon fontSize="small" />,
                   participant: <RoundIcon fontSize="small" />,
-                  decision: <DiamondIcon fontSize="small" />,
+                  decision: <span style={rotatedSquareStyle}><SquareIcon fontSize="small" /></span>,
                   note: <NoteIcon fontSize="small" />,
                   action: <ActionIcon fontSize="small" />,
                   loop: <LoopIcon fontSize="small" />
@@ -157,7 +161,9 @@ export const MermaidElementEditor = ({ element, anchorEl, onClose, onUpdate, zoo
               </MenuItem>
               <MenuItem value="decision">
                 <ListItemIcon>
-                  <DiamondIcon fontSize="small" />
+                  <span style={rotatedSquareStyle}>
+                    <SquareIcon sx={{ fontSize: '17px' }} />
+                  </span>
                 </ListItemIcon>
               </MenuItem>
               <MenuItem value="note">
@@ -178,7 +184,6 @@ export const MermaidElementEditor = ({ element, anchorEl, onClose, onUpdate, zoo
             </Select>
           </FormControl>
         </Stack>
-
         </Paper>
       </ClickAwayListener>
     </Popper>
