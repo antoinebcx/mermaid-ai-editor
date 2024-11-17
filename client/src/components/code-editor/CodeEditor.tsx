@@ -2,6 +2,7 @@ import React, { useRef, UIEvent, useMemo } from 'react';
 import { useTheme, styled } from '@mui/material/styles';
 import Tooltip from '@mui/material/Tooltip';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import AddIcon from '@mui/icons-material/Add';
 import { useSyntaxHighlighting } from './hooks/useSyntaxHighlighting';
 import { useClipboard } from './hooks/useClipboard';
 import {
@@ -40,7 +41,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
   };
 
   const lines = useMemo(() => value.split('\n'), [value]);
-  const lineNumbers = useMemo(() => 
+  const lineNumbers = useMemo(() =>
     Array.from({ length: lines.length }, (_, i) => i + 1),
     [lines.length]
   );
@@ -53,7 +54,6 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
           <ContentCopyIcon fontSize="small" />
         </CopyButton>
       </Tooltip>
-      
       <EditorTextarea
         ref={textareaRef}
         value={value}
@@ -62,17 +62,16 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
         placeholder={placeholder}
         spellCheck={false}
       />
-
       <InteractiveLineNumbers>
-          {lineNumbers.map((num) => (
-            <Tooltip key={num} title="Target this line" placement="right">
-              <div onClick={() => onLineSelect?.(num, lines[num - 1])}>
-                {num}
-              </div>
-            </Tooltip>
-          ))}
+        {lineNumbers.map((num) => (
+          <Tooltip key={num} title="Target this line" placement="right">
+            <div onClick={() => onLineSelect?.(num, lines[num - 1])}>
+              <span>{num}</span>
+              <AddIcon className="add-icon" fontSize="small" />
+            </div>
+          </Tooltip>
+        ))}
       </InteractiveLineNumbers>
-      
       <SyntaxHighlight
         ref={highlightRef}
         onScroll={syncScroll}

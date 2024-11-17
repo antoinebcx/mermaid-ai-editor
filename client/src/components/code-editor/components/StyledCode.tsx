@@ -81,11 +81,25 @@ export const InteractiveLineNumbers = styled(LineNumbers)(({ theme }) => ({
   zIndex: 11,
   '& div': {
     cursor: 'pointer',
+    position: 'relative',
+    textAlign: 'right',
+    '& .add-icon': {
+      position: 'absolute',
+      right: '-12px',
+      top: '50%',
+      transform: 'translateY(-50%)',
+      opacity: 0,
+      fontSize: '0.875rem',
+      transition: 'opacity 0.2s ease',
+    },
     '&:hover': {
       opacity: 1,
       backgroundColor: theme.palette.mode === 'dark'
         ? 'rgba(255, 255, 255, 0.1)'
-        : 'rgba(0, 0, 0, 0.1)'
+        : 'rgba(0, 0, 0, 0.1)',
+      '& .add-icon': {
+        opacity: 1
+      }
     }
   }
 }));
