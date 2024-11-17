@@ -109,7 +109,7 @@ export const DiagramControls = ({
           <ListItemIcon>
             <ImageOutlined fontSize="small" />
           </ListItemIcon>
-          <ListItemText primary="Without background" />
+          <ListItemText primary="No background" />
         </MenuItem>
       </Menu>
     </Box>
