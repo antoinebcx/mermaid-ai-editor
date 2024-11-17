@@ -1,9 +1,9 @@
 import React, { useState, useRef, forwardRef, useImperativeHandle } from 'react';
-import { Box, Alert, useTheme, Chip } from '@mui/material';
+import { Box, Alert, useTheme } from '@mui/material';
 import { useDropzone } from 'react-dropzone';
 import { FileChips } from './components/FileChips';
 import { LineChips } from './components/LineChips';
-import { InputField } from './components/InputField';
+import { InputField, InputFieldRef } from './components/InputField';
 import { useFileProcessing } from './hooks/useFileProcessing';
 import { usePdfLoader } from './hooks/usePdfLoader';
 import { ChatInputProps, ChatInputRef, TargetedLine } from './types';
@@ -14,6 +14,7 @@ const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(({ onSend, isLoading 
   const [input, setInput] = useState('');
   const [targetedLines, setTargetedLines] = useState<TargetedLine[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const inputFieldRef = useRef<InputFieldRef>(null);
   
   const {
     uploadedFiles,
@@ -26,7 +27,10 @@ const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(({ onSend, isLoading 
   usePdfLoader();
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop: handleFiles,
+    onDrop: (files) => {
+      handleFiles(files);
+      inputFieldRef.current?.focus();
+    },
     noClick: true,
     accept: ACCEPTED_FILES
   });
@@ -34,6 +38,7 @@ const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(({ onSend, isLoading 
   const handleLineTarget = (lineNumber: number, lineContent: string) => {
     if (!targetedLines.some(line => line.number === lineNumber)) {
       setTargetedLines(prev => [...prev, { number: lineNumber, content: lineContent }]);
+      inputFieldRef.current?.focus();
     }
   };
 
@@ -79,6 +84,13 @@ const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(({ onSend, isLoading 
     }
   };
 
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      handleFiles(Array.from(e.target.files));
+      inputFieldRef.current?.focus();
+    }
+  };
+
   return (
     <Box sx={{
       position: 'absolute',
@@ -116,6 +128,7 @@ const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(({ onSend, isLoading 
         />
         
         <InputField
+          ref={inputFieldRef}
           value={input}
           onChange={setInput}
           onSubmit={handleSubmit}
@@ -130,7 +143,7 @@ const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(({ onSend, isLoading 
           type="file"
           ref={fileInputRef}
           style={{ display: 'none' }}
-          onChange={(e) => e.target.files && handleFiles(Array.from(e.target.files))}
+          onChange={handleFileInputChange}
           accept={Object.values(ACCEPTED_FILES).flat().join(',')}
           multiple
         />

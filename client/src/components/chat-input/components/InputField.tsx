@@ -1,3 +1,4 @@
+import React, { forwardRef, useImperativeHandle, useRef } from 'react';
 import { Paper, InputBase, IconButton, useTheme, CircularProgress } from '@mui/material';
 import { Send, AttachFile } from '@mui/icons-material';
 
@@ -12,7 +13,11 @@ interface InputFieldProps {
   disabled: boolean;
 }
 
-export const InputField: React.FC<InputFieldProps> = ({
+export interface InputFieldRef {
+  focus: () => void;
+}
+
+export const InputField = forwardRef<InputFieldRef, InputFieldProps>(({
   value,
   onChange,
   onSubmit,
@@ -21,8 +26,15 @@ export const InputField: React.FC<InputFieldProps> = ({
   isExtracting,
   isDragActive,
   disabled
-}) => {
+}, ref) => {
   const theme = useTheme();
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useImperativeHandle(ref, () => ({
+    focus: () => {
+      inputRef.current?.focus();
+    }
+  }));
 
   return (
     <Paper
@@ -33,7 +45,7 @@ export const InputField: React.FC<InputFieldProps> = ({
         display: 'flex',
         alignItems: 'center',
         borderRadius: '24px',
-        backgroundColor: theme.palette.mode === 'light' 
+        backgroundColor: theme.palette.mode === 'light'
           ? 'rgba(235, 235, 235, 0.9)'
           : 'rgba(40, 40, 40, 0.9)',
         backdropFilter: 'blur(2px)',
@@ -55,8 +67,8 @@ export const InputField: React.FC<InputFieldProps> = ({
       >
         <AttachFile />
       </IconButton>
-
       <InputBase
+        inputRef={inputRef}
         sx={{
           ml: 1,
           flex: 1,
@@ -70,11 +82,10 @@ export const InputField: React.FC<InputFieldProps> = ({
         autoComplete="off"
         disabled={disabled}
       />
-
-      <IconButton 
-        type="submit" 
+      <IconButton
+        type="submit"
         disabled={(!value.trim() && disabled) || isLoading || isExtracting}
-        sx={{ 
+        sx={{
           p: '8px',
           color: theme.palette.primary.main,
           '&:hover': {
@@ -92,4 +103,4 @@ export const InputField: React.FC<InputFieldProps> = ({
       </IconButton>
     </Paper>
   );
-};
+});
