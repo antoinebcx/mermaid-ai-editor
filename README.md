@@ -4,7 +4,7 @@ Create and edit Mermaid diagrams and flowcharts with AI (Claude).
 
 Upload text, code files, PDF and Word documents.
 
-Ask Claude for global or targeted changes, or edit directly the code and the diagram.
+Ask the model for global or targeted changes, or edit directly the code and the diagram.
 
 ---
 **Demo**
@@ -22,11 +22,13 @@ Ask Claude for global or targeted changes, or edit directly the code and the dia
 
 **How to use locally**
 
-Add your `ANTHROPIC_API_KEY` to the `.env` file in the server directory and you're good to go!
+Add your `ANTHROPIC_API_KEY` to a `.env` file in the server directory and you're good to go!
 
 ---
 
 **Copy the diagram code to Markdown files**
+
+GitHub supports Mermaid rendering in Markdown!
 
 ```mermaid
 flowchart LR
@@ -38,5 +40,3 @@ flowchart LR
     Code --> Edit
     Create & Edit --> Result(Flow chart)
 ```
-
-GitHub supports Mermaid rendering in Markdown!
