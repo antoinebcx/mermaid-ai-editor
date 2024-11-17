@@ -43,7 +43,7 @@ const DiagramTypeSelector: React.FC<DiagramTypeSelectorProps> = ({ value, onChan
   };
 
   const handleDirectionChange = (newDirection: Direction) => {
-    const newFirstLine = `flowchart ${newDirection}`;
+    const newFirstLine = `graph ${newDirection}`;
     const newCode = [newFirstLine, ...restOfCode].join('\n');
     
     const syntheticEvent = {
@@ -60,7 +60,7 @@ const DiagramTypeSelector: React.FC<DiagramTypeSelectorProps> = ({ value, onChan
 
   return (
     <>
-      <Tooltip title="Chart direction">
+      <Tooltip title="Direction">
         <IconButton
           size="small"
           onClick={handleClick}
