@@ -1,4 +1,3 @@
-// useDownloadDiagram.ts
 import { useState } from 'react';
 import { useTheme } from '@mui/material';
 
@@ -32,29 +31,23 @@ export const useDownloadDiagram = () => {
 
   const downloadDiagram = async ({ includeBackground, format }: DownloadOptions): Promise<void> => {
     try {
-      // First get the SVG element
       const svgElement = document.querySelector('#mermaid-preview svg') as SVGSVGElement;
       if (!svgElement) {
         throw new Error('SVG element not found');
       }
 
-      // Get the actual SVG content dimensions
       const contentBox = svgElement.getBBox();
-      // Add some padding
       const padding = 20;
       const width = Math.ceil(contentBox.width + padding * 2);
       const height = Math.ceil(contentBox.height + padding * 2);
 
-      // Create a copy of the SVG with the correct dimensions
       const clonedSvg = svgElement.cloneNode(true) as SVGSVGElement;
       clonedSvg.setAttribute('width', width.toString());
       clonedSvg.setAttribute('height', height.toString());
       clonedSvg.setAttribute('viewBox', 
         `${contentBox.x - padding} ${contentBox.y - padding} ${width} ${height}`);
 
-      // Create a canvas with matching dimensions
       const canvas = document.createElement('canvas');
-      // Scale up for better quality
       const scale = 2;
       canvas.width = width * scale;
       canvas.height = height * scale;
@@ -63,33 +56,26 @@ export const useDownloadDiagram = () => {
         throw new Error('Could not get canvas context');
       }
 
-      // Scale the context for higher resolution
       ctx.scale(scale, scale);
 
-      // If background is needed, fill it with theme-appropriate color
       if (includeBackground) {
         ctx.fillStyle = theme.palette.mode === 'light' ? theme.palette.grey[50] : '#161616';
         ctx.fillRect(0, 0, width, height);
       }
 
-      // Convert SVG to data URL
       const svgString = new XMLSerializer().serializeToString(clonedSvg);
       const svg64 = btoa(unescape(encodeURIComponent(svgString)));
       const imgSrc = `data:image/svg+xml;base64,${svg64}`;
 
-      // Create an image from the SVG
       const img = new Image();
       img.src = imgSrc;
 
-      // Wait for the image to load then draw it to canvas
       await new Promise<void>((resolve, reject) => {
         img.onload = () => {
           ctx.drawImage(img, 0, 0, width, height);
           
-          // Get the data URL from the canvas
           const dataUrl = canvas.toDataURL(`image/${format}`, 1.0);
           
-          // Create download link
           const link = document.createElement('a');
           const timestamp = getTimestamp();
           link.download = `diagram-${timestamp}.${format}`;
