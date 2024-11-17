@@ -43,7 +43,7 @@ const DiagramTypeSelector: React.FC<DiagramTypeSelectorProps> = ({ value, onChan
   };
 
   const handleDirectionChange = (newDirection: Direction) => {
-    const newFirstLine = `flowchart ${newDirection}`;
+    const newFirstLine = `graph ${newDirection}`;
     const newCode = [newFirstLine, ...restOfCode].join('\n');
     
     const syntheticEvent = {

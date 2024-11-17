@@ -1,6 +1,6 @@
 export const NAVBAR_HEIGHT = 64;
 export const MAX_HISTORY_LENGTH = 100000;
-export const DEFAULT_DIAGRAM = `flowchart TD
+export const DEFAULT_DIAGRAM = `graph TD
     A(Email) --> C[Process Message]
     B(SMS) --> C
     C --> D{Valid Order?}
