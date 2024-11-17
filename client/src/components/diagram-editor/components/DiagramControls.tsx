@@ -1,11 +1,22 @@
-import { IconButton, Tooltip, Typography, Box } from '@mui/material';
+import { IconButton, Tooltip, Typography, Box, Menu, MenuItem, ListItemIcon, ListItemText } from '@mui/material';
 import {
   ZoomInOutlined,
   ZoomOutOutlined,
   CenterFocusStrongOutlined,
   UndoOutlined,
   RedoOutlined,
+  DownloadOutlined,
+  ImageOutlined,
+  Image
 } from '@mui/icons-material';
+
+interface DownloadProps {
+  isOpen: boolean;
+  anchorEl: HTMLElement | null;
+  onDownload: (options: { includeBackground: boolean; format: 'jpg' | 'png' }) => Promise<void>;
+  onDownloadClick: (event: React.MouseEvent<HTMLElement>) => void;
+  onClose: () => void;
+}
 
 interface DiagramControlsProps {
   zoom: number;
@@ -16,6 +27,7 @@ interface DiagramControlsProps {
   onResetZoom: () => void;
   onUndo: () => void;
   onRedo: () => void;
+  downloadProps: DownloadProps;
 }
 
 export const DiagramControls = ({
@@ -27,6 +39,7 @@ export const DiagramControls = ({
   onResetZoom,
   onUndo,
   onRedo,
+  downloadProps,
 }: DiagramControlsProps) => (
   <>
     <Box
@@ -43,20 +56,62 @@ export const DiagramControls = ({
         borderRadius: '8px',
       }}
     >
-        <Tooltip title="Undo (Ctrl/⌘+Z)">
+      <Tooltip title="Undo (Ctrl/⌘+Z)">
         <span>
-            <IconButton onClick={onUndo} size="small" disabled={!canUndo}>
+          <IconButton onClick={onUndo} size="small" disabled={!canUndo}>
             <UndoOutlined />
-            </IconButton>
+          </IconButton>
         </span>
-        </Tooltip>
-        <Tooltip title="Redo (Ctrl/⌘+Shift+Z or Ctrl/⌘+Y)">
+      </Tooltip>
+      <Tooltip title="Redo (Ctrl/⌘+Shift+Z or Ctrl/⌘+Y)">
         <span>
-            <IconButton onClick={onRedo} size="small" disabled={!canRedo}>
+          <IconButton onClick={onRedo} size="small" disabled={!canRedo}>
             <RedoOutlined />
-            </IconButton>
+          </IconButton>
         </span>
-        </Tooltip>
+      </Tooltip>
+      <Tooltip title="Download Diagram">
+        <IconButton onClick={downloadProps.onDownloadClick} size="small">
+          <DownloadOutlined />
+        </IconButton>
+      </Tooltip>
+
+      <Menu
+        anchorEl={downloadProps.anchorEl}
+        open={downloadProps.isOpen}
+        onClose={downloadProps.onClose}
+        anchorOrigin={{
+          vertical: 'top',
+          horizontal: 'left',
+        }}
+        transformOrigin={{
+          vertical: 'bottom',
+          horizontal: 'left',
+        }}
+      >
+        <MenuItem
+          onClick={() => {
+            downloadProps.onDownload({ includeBackground: true, format: 'png' });
+            downloadProps.onClose();
+          }}
+        >
+          <ListItemIcon>
+            <Image fontSize="small" />
+          </ListItemIcon>
+          <ListItemText primary="With background" />
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            downloadProps.onDownload({ includeBackground: false, format: 'png' });
+            downloadProps.onClose();
+          }}
+        >
+          <ListItemIcon>
+            <ImageOutlined fontSize="small" />
+          </ListItemIcon>
+          <ListItemText primary="Without background" />
+        </MenuItem>
+      </Menu>
     </Box>
 
     <Box
