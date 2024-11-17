@@ -17,18 +17,13 @@ export class ChatController {
   processMessage = async (req: ChatRequest, res: Response, next: NextFunction) => {
     try {
       const { messages } = req.body;
+      
       if (!messages || !Array.isArray(messages)) {
         throw new ApiError(400, 'Valid messages array is required');
       }
+
+      await this.chatService.streamResponse(messages, res);
       
-      const response = await this.chatService.generateResponse(messages);
-      res.status(200).json({
-        success: true,
-        data: {
-          response,
-          timestamp: new Date().toISOString(),
-        }
-      });
     } catch (error) {
       if (error instanceof ApiError) {
         next(error);
