@@ -5,8 +5,8 @@ import { config } from '../config';
 export class ChatService {
   private anthropic: Anthropic;
   private readonly systemPrompt = `
-    You build the most relevant and elegant Mermaid flow charts.
-    You return only Mermaid code for the flow chart, nothing else.
+    You build the most relevant and elegant Mermaid diagrams and flow charts.
+    You return only Mermaid code for the diagram, nothing else.
   `.trim();
 
   constructor() {
@@ -36,9 +36,11 @@ export class ChatService {
   ): Promise<void> {
     try {
       const additionalInstructions = `
-        Build/adapt the most relevant and elegant Mermaid flow chart for this request.
+        Build/adapt the most relevant and elegant Mermaid diagram for this request.
         Answer best the request, in code.
-        Return only the Mermaid code for the flow chart, nothing else.
+        Focus on the diagram structure and relevance of the components.
+        Don’t add colors/style if not asked to.
+        Return only the Mermaid code for the diagram, nothing else.
       `.trim();
 
       const updatedMessages = this.appendInstructionsToLastUserMessage(
@@ -46,7 +48,6 @@ export class ChatService {
         additionalInstructions
       );
 
-      // Set up SSE headers
       res.writeHead(200, {
         'Content-Type': 'text/event-stream',
         'Cache-Control': 'no-cache',
@@ -73,7 +74,6 @@ export class ChatService {
           res.end();
         })
         .on('end', () => {
-          // Send the complete response
           res.write(`data: ${JSON.stringify({ type: 'done', text: accumulatedText })}\n\n`);
           res.end();
         });
