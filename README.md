@@ -1,14 +1,22 @@
 # Mermaid AI editor
 
-Create and edit Mermaid diagrams with AI (Claude).
+Create and edit Mermaid diagrams and flowcharts with AI (Claude).
 
-Upload text, code files, PDF and Word documents. Ask AI or edit directly the code and the diagram.
+Upload text, code files, PDF and Word documents.
 
-![Screen+Recording+2024-11-17+at+02 35 46](https://github.com/user-attachments/assets/d7d21cad-67bd-4b05-9794-3c9efaaa15fb)
+Ask Claude for global or targeted changes, or edit directly the code and the diagram.
 
 ---
+**Demo**
+![Screen+Recording+2024-11-17+at+17 36 28_3](https://github.com/user-attachments/assets/672c25a7-5467-40e7-b918-ce6be134287d)
 
-<img width="1321" alt="image" src="https://github.com/user-attachments/assets/5f867cc5-6046-476d-904a-8ee2135b09ae">
+---
+**Light mode**
+<img width="1321" alt="image" src="https://github.com/user-attachments/assets/7694c150-99a1-4e32-a17b-e156b1034562">
+
+---
+**Dark mode**
+<img width="1321" alt="image" src="https://github.com/user-attachments/assets/13539bff-5f43-410a-80d2-1bf43f51f97d">
 
 ---
 
@@ -17,6 +25,8 @@ Upload text, code files, PDF and Word documents. Ask AI or edit directly the cod
 Add your `ANTHROPIC_API_KEY` to the `.env` file in the server directory and you're good to go!
 
 ---
+
+**Copy the diagram code to Markdown files**
 
 ```mermaid
 flowchart LR
