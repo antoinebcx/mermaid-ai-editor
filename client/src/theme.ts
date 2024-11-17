@@ -40,13 +40,24 @@ const getThemeOptions = (mode: 'light' | 'dark'): ThemeOptions => ({
         },
       },
     },
+    MuiMenu: {
+      defaultProps: {
+        elevation: 0,
+      },
+      styleOverrides: {
+        paper: ({ theme }) => ({
+          border: `1px solid ${theme.palette.divider}`,
+          boxShadow: 'none',
+        }),
+      },
+    },
     MuiIconButton: {
       styleOverrides: {
         root: ({ theme }) => ({
           color: theme.palette.mode === 'light' ? 'rgba(0, 0, 0, 0.54)' : 'rgba(255, 255, 255, 0.7)',
           '&:hover': {
-            backgroundColor: theme.palette.mode === 'light' 
-              ? 'rgba(0, 0, 0, 0.04)' 
+            backgroundColor: theme.palette.mode === 'light'
+              ? 'rgba(0, 0, 0, 0.04)'
               : 'rgba(255, 255, 255, 0.08)',
           },
           transition: 'background-color 150ms cubic-bezier(0.4, 0, 0.2, 1) 0ms',
