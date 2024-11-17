@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
+import { useTheme } from '@mui/material';
 import { MermaidElement } from '../types';
 import { findNodeDefinition, updateNodeText, updateNodeShape } from '../utils/mermaidUtils';
 
@@ -8,6 +9,7 @@ interface UseMermaidInteractionProps {
 }
 
 export const useMermaidInteraction = ({ code, updateCode }: UseMermaidInteractionProps) => {
+  const theme = useTheme();
   const [selectedElement, setSelectedElement] = useState<MermaidElement | null>(null);
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const updateTimeoutRef = useRef<number>();
@@ -63,30 +65,24 @@ export const useMermaidInteraction = ({ code, updateCode }: UseMermaidInteractio
     const target = e.target as HTMLElement;
   
     const nodeGroup = target.closest('g.node');
-    if (!nodeGroup) {
-      console.log('No node group found');
-      return;
-    }
+    if (!nodeGroup) return;
   
     const nodeMatch = nodeGroup.id.match(/flowchart-([^-]+)/);
     const nodeId = nodeMatch?.[1];
-    if (!nodeId) {
-      console.log('No node ID found');
-      return;
-    }
+    if (!nodeId) return;
   
     const foreignObject = nodeGroup.querySelector('foreignObject');
-    if (!foreignObject) {
-      console.log('No foreignObject found for this node');
-      return;
-    }
+    if (!foreignObject) return;
   
     const textElement = foreignObject.querySelector('div > span > p');
-    if (!textElement) {
-      console.log('No text element found for this node');
-      return;
-    }
-  
+    if (!textElement) return;
+
+    const rect = nodeGroup.querySelector('rect');
+    const nodeBgColor = rect ? window.getComputedStyle(rect).fill : 
+      (theme.palette.mode === 'light' ? '#f9f9f9' : '#1f1f1f');
+    
+    const nodeTextColor = window.getComputedStyle(textElement).color || 
+      (theme.palette.mode === 'light' ? '#000000' : '#ffffff');
     const boundingBox = textElement.getBoundingClientRect();
   
     const input = document.createElement('input');
@@ -97,10 +93,13 @@ export const useMermaidInteraction = ({ code, updateCode }: UseMermaidInteractio
     input.style.left = `${boundingBox.left + window.scrollX - 10}px`;
     input.style.width = `${boundingBox.width + 20}px`;
     input.style.height = `${boundingBox.height + 5}px`;
-    input.style.fontSize = window.getComputedStyle(textElement).fontSize;
-    input.style.border = '1px solid #ccc';
-    input.style.background = 'white';
+    input.style.border = `1px solid ${theme.palette.divider}`;
+    input.style.background = nodeBgColor;
+    input.style.color = nodeTextColor;
     input.style.zIndex = '1000';
+    input.style.padding = '0 5px';
+    input.style.outline = 'none';
+    input.style.borderRadius = '2px';
 
     const originalFontSize = parseFloat(window.getComputedStyle(textElement).fontSize);
     input.style.fontSize = `${originalFontSize * 0.85}px`;
@@ -120,9 +119,11 @@ export const useMermaidInteraction = ({ code, updateCode }: UseMermaidInteractio
     input.onkeydown = (keyEvent) => {
       if (keyEvent.key === 'Enter') {
         input.blur();
+      } else if (keyEvent.key === 'Escape') {
+        document.body.removeChild(input);
       }
     };
-  };   
+  };
 
   const handleElementUpdate = useCallback((updates: Partial<MermaidElement>) => {
     if (!selectedElement) return;
