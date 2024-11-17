@@ -13,6 +13,7 @@ import CodeEditor from './code-editor/CodeEditor';
 import ChatInput from './chat-input/ChatInput';
 import { ChatInputRef } from './chat-input/types'
 import { MermaidElementEditor } from './diagram-editor/components/ElementEditor';
+import { useDownloadDiagram } from './diagram-editor/hooks/useDownloadDiagram';
 
 const MermaidEditor = () => {
   const theme = useTheme();
@@ -62,6 +63,14 @@ const MermaidEditor = () => {
     handleTouchMove,
     handleTouchEnd,
   } = useDiagramInteraction(zoomPan);
+
+  const {
+    isDownloadMenuOpen,
+    downloadAnchorEl,
+    handleDownloadClick,
+    handleDownloadClose,
+    downloadDiagram
+  } = useDownloadDiagram();
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
@@ -178,6 +187,13 @@ const MermaidEditor = () => {
             onResetZoom={handleResetZoom}
             onUndo={handleUndo}
             onRedo={handleRedo}
+            downloadProps={{
+              isOpen: isDownloadMenuOpen,
+              anchorEl: downloadAnchorEl,
+              onDownload: downloadDiagram,
+              onDownloadClick: handleDownloadClick,
+              onClose: handleDownloadClose,
+            }}
           />
 
           {selectedElement && (
