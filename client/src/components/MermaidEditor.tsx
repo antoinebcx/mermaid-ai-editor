@@ -84,8 +84,8 @@ const MermaidEditor = () => {
 
   return (
     <>
-      {error && <Alert severity="error" sx={{ m: 2 }}>{error}</Alert>}
-      {chatError && <Alert severity="error" sx={{ m: 2 }}>{chatError}</Alert>}
+      {!isChatLoading && error && <Alert severity="error" sx={{ m: 2 }}>{error}</Alert>}
+      {!isChatLoading && chatError && <Alert severity="error" sx={{ m: 2 }}>{chatError}</Alert>}
 
       <Box sx={{ 
         display: 'flex', 
