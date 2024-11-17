@@ -1,20 +1,19 @@
 import { useState } from 'react';
 import { ChatMessage, APIMessage } from '../types';
 import { MAX_HISTORY_LENGTH } from '../constants';
-import { sendChatMessage } from '../../../api';
+import { streamChatMessage } from '../../../api';
 
 export const useChat = (code: string, updateCode: (code: string) => void) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [chatError, setChatError] = useState<string | null>(null);
   const [isChatLoading, setIsChatLoading] = useState(false);
+  const [currentResponse, setCurrentResponse] = useState('');
 
   const truncateMessageHistory = (messages: ChatMessage[], maxLength: number): ChatMessage[] => {
     let totalLength = 0;
     const truncatedMessages = [];
-
     for (let i = messages.length - 1; i >= 0; i--) {
       const messageLength = messages[i].content.length;
-
       if (totalLength + messageLength <= maxLength) {
         truncatedMessages.unshift(messages[i]);
         totalLength += messageLength;
@@ -35,13 +34,13 @@ export const useChat = (code: string, updateCode: (code: string) => void) => {
         break;
       }
     }
-
     return truncatedMessages;
   };
 
   const handleChatMessage = async (message: string) => {
     setIsChatLoading(true);
     setChatError(null);
+    setCurrentResponse('');
 
     try {
       const userMessage: ChatMessage = {
@@ -57,22 +56,38 @@ export const useChat = (code: string, updateCode: (code: string) => void) => {
         content: msg.content
       }));
 
-      const response = await sendChatMessage(apiMessages);
-      const cleanedResponse = response.replace(/^```mermaid\n?|\n?```$/g, '').trim();
-
-      const assistantMessage: ChatMessage = {
-        sender: 'assistant',
-        content: cleanedResponse
-      };
-
-      updatedMessages = [...updatedMessages, assistantMessage];
-      setMessages(updatedMessages);
-
-      updateCode(cleanedResponse);
+      await streamChatMessage(
+        apiMessages,
+        (text) => {
+          setCurrentResponse(prev => {
+            const newResponse = prev + text;
+            if (text.includes('\n')) {
+              const lastNewlineIndex = newResponse.lastIndexOf('\n');
+              const completeLines = newResponse.substring(0, lastNewlineIndex);
+              updateCode(completeLines);
+            }
+            return newResponse;
+          });
+        },
+        (finalText) => {
+          setCurrentResponse(finalText);
+          updateCode(finalText);
+          const assistantMessage: ChatMessage = {
+            sender: 'assistant',
+            content: finalText
+          };
+          setMessages(prev => [...prev, assistantMessage]);
+          setIsChatLoading(false);
+        },
+        (error) => {
+          console.error('Chat error:', error);
+          setChatError('Failed to process chat message. Please try again.');
+          setIsChatLoading(false);
+        }
+      );
     } catch (error) {
       console.error('Chat error:', error);
       setChatError('Failed to process chat message. Please try again.');
-    } finally {
       setIsChatLoading(false);
     }
   };
@@ -81,6 +96,7 @@ export const useChat = (code: string, updateCode: (code: string) => void) => {
     messages,
     chatError,
     isChatLoading,
+    currentResponse,
     handleChatMessage
   };
 };
