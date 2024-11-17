@@ -1,12 +1,12 @@
 # Mermaid AI editor
 
-Create and edit Mermaid flow charts with AI (Claude).
+Create and edit Mermaid diagrams with AI (Claude).
 
-Upload text, code files, PDF and Word documents.
+Upload text, code files, PDF and Word documents. Ask AI or edit directly the code and the diagram.
 
-<img width="1321" alt="image" src="https://github.com/user-attachments/assets/003fb997-d4a6-474c-aa97-6b3f19cabfa3">
+![Screen+Recording+2024-11-17+at+02 35 46](https://github.com/user-attachments/assets/d7d21cad-67bd-4b05-9794-3c9efaaa15fb)
 
-_
+---
 
 <img width="1321" alt="image" src="https://github.com/user-attachments/assets/5f867cc5-6046-476d-904a-8ee2135b09ae">
 
@@ -29,4 +29,4 @@ flowchart LR
     Create & Edit --> Result(Flow chart)
 ```
 
-GitHub supports Mermaid in READMEs!
+GitHub supports Mermaid rendering in Markdown!
